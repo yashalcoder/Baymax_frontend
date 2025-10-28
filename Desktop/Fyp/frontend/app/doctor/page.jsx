@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Sidebar from "@/components/sidebar";
 import { useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
 const DoctorDashboard = () => {
   const router = useRouter();
 
@@ -81,12 +82,9 @@ const DoctorDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-accent/20">
-      {/* Sidebar */}
-      <Sidebar />
-
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
       {/* Main Content */}
-      <main className="ml-64 p-8">
+      <main className=" p-8">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="flex justify-between items-center">
@@ -103,7 +101,7 @@ const DoctorDashboard = () => {
               onClick={() => router.push("/doctor/transcription")}
             >
               <Plus className="w-4 h-4 mr-2" />
-              New Consultation
+              Start Consultation
             </Button>
           </div>
 
@@ -145,13 +143,6 @@ const DoctorDashboard = () => {
                     View and manage your patient consultations
                   </CardDescription>
                 </div>
-                <Button
-                  variant="outline"
-                  className="border-primary text-primary hover:bg-primary/10"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New Patient
-                </Button>
               </div>
             </CardHeader>
             <CardContent className="p-0">

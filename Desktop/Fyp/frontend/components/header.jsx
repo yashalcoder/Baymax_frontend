@@ -1,15 +1,16 @@
 import { Stethoscope } from "lucide-react";
-
+import Image from "next/image";
+import Logo from "@/public/logo-removebg-preview.png";
 export default function Header() {
   return (
     <header className="sticky top-0 z-40 bg-background/80 backdrop-blur border-b border-border">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         <a href="#" className="flex items-center gap-2 font-semibold">
-          <Stethoscope className="w-10 h-10 text-white bg-hero-gradient p-1 rounded-md" />
-          <div>
+          <Image src={Logo} alt="no imae" className="w-16 h-16" />
+          {/* <div>
             <span>BayMax+</span>
             <p className="text-xs text-gray-900 b">Healthcare Reimagined</p>
-          </div>
+          </div> */}
         </a>
         <nav className="hidden md:flex items-center gap-8 text-sm">
           <a

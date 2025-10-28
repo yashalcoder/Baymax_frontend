@@ -27,6 +27,7 @@ import {
   Settings,
   Upload,
 } from "lucide-react";
+import Navbar from "../../../components/Navbar";
 
 const Transcription = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -295,70 +296,6 @@ const Transcription = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
-      {/* Professional Navbar */}
-      <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            {/* Left section */}
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md">
-                  <span className="text-white font-bold text-lg">B+</span>
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">Baymax+</h1>
-                  <p className="text-xs text-gray-500">Doctor Portal</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Center section */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-600 hover:text-gray-900"
-              >
-                Dashboard
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-600 hover:text-gray-900"
-              >
-                Patients
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="bg-blue-50 text-blue-600 hover:bg-blue-100"
-              >
-                Transcription
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-600 hover:text-gray-900"
-              >
-                Prescriptions
-              </Button>
-            </div>
-
-            {/* Right section */}
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm">
-                <Settings className="w-4 h-4" />
-              </Button>
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold shadow-md">
-                  DA
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <div className="max-w-6xl mx-auto p-8 space-y-6">
         {/* Header */}
