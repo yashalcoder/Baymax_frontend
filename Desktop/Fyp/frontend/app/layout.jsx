@@ -1,24 +1,16 @@
-import "./globals.css"
-import { GeistSans } from "geist/font/sans"
-import { GeistMono } from "geist/font/mono"
-import { Analytics } from "@vercel/analytics/next"
-import { Suspense } from "react"
-
-export const metadata = {
-  title: "BayMax+",
-  description: "Bilingual healthcare assistant for Pakistan",
-  generator: "v0.app",
-}
+// layout.jsx (stays server component)
+import { SidebarProvider } from "@/components/sidebar-provider";
+import LayoutContent from "@/components/layout-content";
+import "./globals.css";
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-      <body className="font-sans">
-        <Suspense fallback={<div>Loading...</div>}>
-          {children}
-          <Analytics />
-        </Suspense>
+    <html lang="en">
+      <body>
+        <SidebarProvider>
+          <LayoutContent>{children}</LayoutContent>
+        </SidebarProvider>
       </body>
     </html>
-  )
+  );
 }

@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { Stethoscope } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Logo from "@/public/logo-removebg-preview.png";
 export default function LoginPage() {
   const [role, setRole] = useState("doctor");
   const router = useRouter();
@@ -9,12 +11,9 @@ export default function LoginPage() {
     <main className="min-h-[88vh] bg-soft flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-xl card p-6 md:p-8">
         <div className="flex flex-col items-center text-center gap-3">
-          <a href="#" className="flex items-center gap-2 font-semibold">
-            <Stethoscope className="w-10 h-10 text-white bg-hero-gradient p-1 rounded-md" />
-            <div>
-              <span>BayMax+</span>
-              <p className="text-xs text-gray-900 b">Healthcare Reimagined</p>
-            </div>
+          <a href="#" className="flex items-center  font-semibold">
+            <Image src={Logo} alt="no image " className="w-16 h-16" />
+            <div></div>
           </a>
           <h1 className="text-3xl font-semibold">Welcome Back</h1>
           <p className="text-muted-foreground">
