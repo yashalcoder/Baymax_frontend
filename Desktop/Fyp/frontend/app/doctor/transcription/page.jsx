@@ -46,6 +46,9 @@ const Transcription = () => {
   const streamRef = useRef(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
   // Timer effect
+  const user = JSON.parse(localStorage.getItem("user"));
+  const doctorId = user._id;
+
   useEffect(() => {
     if (isRecording && !isPaused) {
       timerRef.current = setInterval(() => {
@@ -218,7 +221,7 @@ const Transcription = () => {
     const formData = new FormData();
     formData.append("audio", audioBlob, "recording.webm");
     formData.append("language", selectedLanguage);
-
+    formData.append("doctorId", doctorId);
     try {
       const response = await fetch(`${endpoint}/api/transcribe`, {
         method: "POST",
@@ -477,6 +480,7 @@ const Transcription = () => {
                     <Download className="w-5 h-5 mr-2" />
                     Download Audio
                   </Button>
+
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl px-8"
