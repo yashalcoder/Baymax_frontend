@@ -89,11 +89,12 @@ const DoctorDashboard = () => {
           {/* Header */}
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-4xl font-bold text-foreground mb-2">
+              <h1 className="text-4xl font-bold font-poppins text-foreground mb-2">
                 Welcome, Dr. Ahmed
               </h1>
               <p className="text-muted-foreground">
-                Here's what's happening with your patients today
+                Here's what's happening with your{" "}
+                <span className="font-poppins"> patients today</span>
               </p>
             </div>
             <Button

@@ -46,6 +46,9 @@ const Transcription = () => {
   const streamRef = useRef(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
   // Timer effect
+  const user = JSON.parse(localStorage.getItem("user"));
+  const doctorId = user._id;
+
   useEffect(() => {
     if (isRecording && !isPaused) {
       timerRef.current = setInterval(() => {
@@ -205,39 +208,82 @@ const Transcription = () => {
 
   const handleSendToWhisper = async () => {
     if (!audioBlob) {
-      alert("Please record audio first!");
+      Swal.fire({
+        title: "No Audio",
+        text: "Please record audio first!",
+        icon: "warning",
+      });
       return;
     }
-    setIsTranscribing(true); // Start loading
-    // Convert webm to format Whisper accepts (you'll implement this in your backend)
+
+    setIsTranscribing(true);
+
     const formData = new FormData();
     formData.append("audio", audioBlob, "recording.webm");
     formData.append("language", selectedLanguage);
-
+    formData.append("doctorId", doctorId);
     try {
-      // This is where you'll call your Whisper API
-      // Example API call structure:
-
       const response = await fetch(`${endpoint}/api/transcribe`, {
         method: "POST",
         body: formData,
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      setTranscription(data.english_translation);
-      setUrduTranscription(data.urdu_or_punjabi_text);
-      console.log(data);
+      console.log("Response data:", data);
+
+      // Check if conversation array exists and has items
+      if (
+        data.conversation &&
+        Array.isArray(data.conversation) &&
+        data.conversation.length > 0
+      ) {
+        // Combine all conversation items into formatted strings
+        const englishText = data.conversation
+          .map((item) => `${item.speaker} (${item.timestamp}): ${item.english}`)
+          .join("\n\n");
+
+        const urduText = data.conversation
+          .map((item) => `${item.speaker} (${item.timestamp}): ${item.urdu}`)
+          .join("\n\n");
+
+        setTranscription(englishText);
+        setUrduTranscription(urduText);
+
+        Swal.fire({
+          title: "Transcription Complete!",
+          text: `Successfully transcribed ${data.conversation.length} utterance(s)`,
+          icon: "success",
+        });
+      } else {
+        // Fallback if no conversation items
+        setTranscription(data.full_transcript || "No transcription available");
+        setUrduTranscription("No Urdu transcription available");
+
+        Swal.fire({
+          title: "Transcription Complete",
+          text: "No speaker-separated conversation detected",
+          icon: "info",
+        });
+      }
 
       console.log("Audio blob ready for Whisper:", audioBlob);
       console.log("File size:", (audioBlob.size / 1024).toFixed(2), "KB");
     } catch (error) {
       console.error("Error sending to Whisper:", error);
-      alert("Error processing audio");
+
+      Swal.fire({
+        title: "Transcription Error",
+        text: error.message || "Error processing audio. Please try again.",
+        icon: "error",
+      });
     } finally {
-      setIsTranscribing(false); // Stop loading
+      setIsTranscribing(false);
     }
   };
-
   const handleClearTranscription = () => {
     if (confirm("Are you sure you want to clear the transcription?")) {
       setTranscription("");
@@ -357,7 +403,7 @@ const Transcription = () => {
 
           <CardContent className="p-8">
             {/* Language Selection */}
-            <div className="mb-6">
+            {/* <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Select Language for Transcription
               </label>
@@ -377,7 +423,7 @@ const Transcription = () => {
                   </button>
                 ))}
               </div>
-            </div>
+            </div> */}
 
             {/* Recording Buttons */}
             <div className="flex flex-wrap gap-4">
@@ -434,6 +480,7 @@ const Transcription = () => {
                     <Download className="w-5 h-5 mr-2" />
                     Download Audio
                   </Button>
+
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl px-8"
