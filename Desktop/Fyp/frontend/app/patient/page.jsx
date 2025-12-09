@@ -152,23 +152,8 @@ export default function PatientDashboard({ patientId }) {
       setError(null);
 
       try {
-        // Determine id to fetch
-        let effectiveId = patientId;
-        if (!effectiveId) {
-          const stored = localStorage.getItem("user");
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            effectiveId = parsed?.id;
-          }
-        }
-
-        // If no id is available, just use mock and skip fetch
-        if (!effectiveId) {
-          throw new Error("no-patient-id");
-        }
-
         // Attempt to fetch from real backend endpoint
-        const res = await fetch(`http://localhost:5000/api/patients/${effectiveId}/dashboard`);
+        const res = await fetch(`/api/patients/${patientId}/dashboard`);
         if (!res.ok) {
           // If API returns 404/500/etc, fallback to mock data to keep UI working
           throw new Error(`Server returned ${res.status}`);
@@ -180,18 +165,9 @@ export default function PatientDashboard({ patientId }) {
         // Fallback mock data - remove this in production
         console.warn("Warning: using mock patient data because fetch failed:", err.message);
 
-        // Try to enrich mock with stored user data
-        let storedUser = {};
-        try {
-          const s = localStorage.getItem("user");
-          storedUser = s ? JSON.parse(s) : {};
-        } catch {
-          storedUser = {};
-        }
-
         const mock = {
-          id: patientId ?? storedUser.id ?? "p-0001",
-          name: storedUser.name || "Aisha Khan",
+          id: patientId ?? "p-0001",
+          name: "Aisha Khan",
           age: 29,
           gender: "F",
           doctor: { id: "d-100", name: "Dr. Ali Raza" },
