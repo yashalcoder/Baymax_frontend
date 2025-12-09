@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Logo from "@/public/logo-removebg-preview.png";
+import Swal from "sweetalert2";
+import { tr } from "date-fns/locale";
 
 export default function LoginPage() {
   const [role, setRole] = useState("doctor");
@@ -44,15 +46,21 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
-
+      console.log("Login response data:", data);
       if (data.status === "success") {
         // Store JWT token in localStorage
         localStorage.setItem("token", data.data.token);
         localStorage.setItem("user", JSON.stringify(data.data));
         localStorage.setItem("role", data.data.role);
-
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: `Welcome back, ${data.data.name}!`,
+          showConfirmButton: true,
+          timer: 3000,
+        });
         // Success message
-        alert(`✅ Welcome back, ${data.data.name}!`);
+        // alert(`✅ Welcome back, ${data.data.name}!`);
 
         // Redirect based on role
         if (role === "doctor") {

@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import AudioVisualizer from "@/components/AudioVisulaizer";
 import Swal from "sweetalert2";
 import { Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,6 +46,15 @@ const Transcription = () => {
   const timerRef = useRef(null);
   const streamRef = useRef(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
+
+  // Timer effect
+
+  // --- NEW REFS FOR VISUALIZATION ---
+  const canvasRef = useRef(null);
+  const animationFrameRef = useRef(null);
+  const audioContextRef = useRef(null);
+  // ------------------------------------
+
   // Timer effect
   const user = JSON.parse(localStorage.getItem("user"));
   const doctorId = user._id;
@@ -424,6 +434,11 @@ const Transcription = () => {
                 ))}
               </div>
             </div> */}
+            <AudioVisualizer
+              stream={streamRef.current}
+              isRecording={isRecording}
+              isPaused={isPaused}
+            />
 
             {/* Recording Buttons */}
             <div className="flex flex-wrap gap-4">
@@ -493,10 +508,7 @@ const Transcription = () => {
                         Processing...
                       </>
                     ) : (
-                      <>
-                        <Upload className="w-5 h-5 mr-2" />
-                        Send to Whisper AI
-                      </>
+                      <>Transcribe</>
                     )}
                   </Button>
                 </>
