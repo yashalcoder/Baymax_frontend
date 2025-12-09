@@ -8,12 +8,20 @@ export default function LayoutContent({ children }) {
   const { collapsed } = useSidebar();
   const pathname = usePathname();
 
-  // Auth pages ki list
+  // Auth pages ki list - include all signup and login pages
   const isAuthPage =
-    pathname === "/login" || pathname === "/signup" || pathname === "/";
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/" ||
+    pathname?.startsWith("/signup/") ||
+    pathname?.startsWith("/login/");
 
-  // Agar auth page hai, toh sirf children render karo
-  if (isAuthPage) {
+  // Lab and pharmacy pages should not show doctor navbar/sidebar
+  const isLabOrPharmacyPage =
+    pathname?.startsWith("/lab") || pathname?.startsWith("/pharmacy") || pathname?.startsWith("/assistant");
+
+  // Agar auth page ya lab/pharmacy page hai, toh sirf children render karo
+  if (isAuthPage || isLabOrPharmacyPage) {
     return <>{children}</>;
   }
 
