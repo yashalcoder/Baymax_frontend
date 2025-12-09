@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   User,
   Mail,
@@ -25,6 +25,8 @@ import {
   FileText,
   Languages,
 } from "lucide-react";
+import Swal from "sweetalert2";
+import { get } from "http";
 
 export default function DoctorProfileSettings() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -43,34 +45,34 @@ export default function DoctorProfileSettings() {
 
   const [doctorData, setDoctorData] = useState({
     // Personal Information
-    firstName: "Ahmed",
-    lastName: "Hassan",
-    title: "Dr.",
-    gender: "Male",
-    dateOfBirth: "1985-05-15",
-    bloodGroup: "B+",
-    languages: ["English", "Urdu", "Punjabi"],
-    bio: "Experienced cardiologist with over 15 years of practice specializing in interventional cardiology and heart disease prevention.",
+    firstName: "",
+    lastName: "",
+    title: "",
+    gender: "",
+    dateOfBirth: "",
+    bloodGroup: "",
+    languages: [""],
+    bio: "",
 
     // Contact Information
-    email: "dr.ahmed@medixpro.com",
-    phone: "+92 300 1234567",
-    alternatePhone: "+92 321 7654321",
-    address: "123 Medical Plaza",
-    city: "Shahkot",
-    state: "Punjab",
-    country: "Pakistan",
-    postalCode: "39400",
+    email: "",
+    phone: "",
+    alternatePhone: "",
+    address: "",
+    city: "",
+    state: "",
+    country: "",
+    postalCode: "",
 
     // Professional Details
-    specialization: "Cardiologist",
-    subSpecialization: "Interventional Cardiology",
-    licenseNumber: "PMC-12345",
-    licenseState: "Punjab",
-    licenseExpiry: "2026-12-31",
-    medicalDegree: "MBBS",
-    additionalDegrees: "FCPS (Cardiology)",
-    university: "King Edward Medical University",
+    specialization: "",
+    subSpecialization: "",
+    licenseNumber: "",
+    licenseState: "",
+    licenseExpiry: "",
+    medicalDegree: "",
+    additionalDegrees: "",
+    university: "",
     graduationYear: "2005",
     experience: "15",
     currentHospital: "City Medical Center",
@@ -99,6 +101,39 @@ export default function DoctorProfileSettings() {
     labReportAlerts: true,
     newPatientAlerts: true,
   });
+  const endpoint = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+  useEffect(() => {
+    const fetchDoctorProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(`${endpoint}/api/auth/profile`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const result = await response.json();
+        console.log("Doctor Profile:", result);
+
+        if (result.status === "success") {
+          const doc = result.data;
+          console.log("Doctor Data:", doc);
+          setDoctorData((prevData) => ({
+            ...prevData, // keep existing dummy/default values
+            ...result.data, // overwrite with backend values where available
+          }));
+        }
+      } catch (error) {
+        console.log("Error fetching doctor:", error);
+      }
+    };
+
+    fetchDoctorProfile();
+  }, []);
 
   const handleInputChange = (field, value) => {
     setDoctorData((prev) => ({ ...prev, [field]: value }));
@@ -124,10 +159,32 @@ export default function DoctorProfileSettings() {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log("Saving data:", doctorData);
+    const response = await fetch(`${endpoint}/api/doctors/update/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(doctorData),
+    });
     setIsEditing(false);
-    alert("Changes saved successfully!");
+    const data = await response.json();
+    if (data.status === "success") {
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Your changes have been saved successfully!",
+      });
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "There was an error saving your changes. Please try again.",
+      });
+    }
+    //alert("Changes saved successfully!");
   };
 
   const renderPersonalInfo = () => (
@@ -1130,32 +1187,30 @@ export default function DoctorProfileSettings() {
             Manage your profile information and preferences
           </p>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sticky top-6">
-              <nav className="space-y-2">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${
-                        activeTab === tab.id
-                          ? "bg-blue-600 text-white shadow-md"
-                          : "text-gray-700 hover:bg-gray-100"
-                      }`}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span className="font-medium text-sm">{tab.name}</span>
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
+        <div className="lg:col-span-3 mb-5">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sticky top-6">
+            <nav className="flex gap-2 overflow-x-auto  p-5">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                      activeTab === tab.id
+                        ? "bg-blue-600 text-white shadow-md"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {tab.name}
+                  </button>
+                );
+              })}
+            </nav>
           </div>
-
+        </div>
+        <div className="">
           <div className="lg:col-span-3">
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">

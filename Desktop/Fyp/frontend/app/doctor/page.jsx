@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -17,12 +18,19 @@ import {
   Plus,
   ChevronRight,
 } from "lucide-react";
-import Sidebar from "@/components/sidebar";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
+import { use } from "react";
+
 const DoctorDashboard = () => {
   const router = useRouter();
-
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      setUser(JSON.parse(stored));
+      console.log("user from localstorage " + JSON.parse(stored));
+    }
+  }, []);
   const patients = [
     {
       id: 1,
@@ -89,9 +97,16 @@ const DoctorDashboard = () => {
           {/* Header */}
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-4xl font-bold font-poppins text-foreground mb-2">
-                Welcome, Dr. Ahmed
-              </h1>
+              {user ? (
+                <h1 className="text-4xl font-bold font-poppins text-foreground mb-2">
+                  Welcome back, Dr. {user.name}!
+                </h1>
+              ) : (
+                <h1 className="text-4xl font-bold font-poppins text-foreground mb-2">
+                  Loading...
+                </h1>
+              )}
+
               <p className="text-muted-foreground">
                 Here's what's happening with your{" "}
                 <span className="font-poppins"> patients today</span>

@@ -19,10 +19,12 @@ import {
   Square,
   Play,
   CheckCircle,
+  EyeOff,
   AlertCircle,
   Eye,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 export default function DoctorRegistration() {
   const router = useRouter();
@@ -66,6 +68,7 @@ export default function DoctorRegistration() {
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
   const streamRef = useRef(null);
+  const [showPassword, setShowPassword] = useState(false);
   const endpoint = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const [selectedLanguages, setSelectedLanguages] = useState([]);
@@ -103,13 +106,33 @@ export default function DoctorRegistration() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // const handleAvailabilityChange = (day) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     availability: prev.availability.includes(day)
+  //       ? prev.availability.filter((d) => d !== day)
+  //       : [...prev.availability, day],
+  //   }));
+  // };
   const handleAvailabilityChange = (day) => {
-    setFormData((prev) => ({
-      ...prev,
-      availability: prev.availability.includes(day)
-        ? prev.availability.filter((d) => d !== day)
-        : [...prev.availability, day],
-    }));
+    const exists = formData.availability.find((a) => a.day === day);
+    if (exists) {
+      setFormData({
+        ...formData,
+        availability: formData.availability.filter((a) => a.day !== day),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        availability: [...formData.availability, { day, from: "", to: "" }],
+      });
+    }
+  };
+
+  const handleTimeChange = (index, field, value) => {
+    const updated = [...formData.availability];
+    updated[index][field] = value;
+    setFormData({ ...formData, availability: updated });
   };
 
   const addLanguage = () => {
@@ -134,9 +157,14 @@ export default function DoctorRegistration() {
     try {
       // Check if mediaDevices is available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert(
-          "Your browser doesn't support audio recording or this page needs to be served over HTTPS."
-        );
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Your browser doesn't support audio recording or this page needs to be served over HTTPS.",
+        });
+        //  alert(
+        //   "Your browser doesn't support audio recording or this page needs to be served over HTTPS."
+        //   );
         return;
       }
 
@@ -197,7 +225,12 @@ export default function DoctorRegistration() {
       }, 30000);
     } catch (error) {
       console.error("Microphone error:", error);
-      alert("Could not access microphone. Please check permissions.");
+      Swal.fire({
+        icon: "error",
+        title: "Microphone Access Denied",
+        text: "Could not access microphone. Please check permissions.",
+      });
+      // alert("Could not access microphone. Please check permissions.");
     }
   };
 
@@ -227,9 +260,15 @@ export default function DoctorRegistration() {
 
     // Validation: Check if voice sample is recorded
     if (!voiceBlob) {
-      alert(
-        "⚠️ Please record your voice sample for fingerprint identification!"
-      );
+      Swal.fire({
+        icon: "warning",
+        title: "Voice Sample Required",
+        text: "Please record your voice sample for fingerprint identification!",
+      });
+
+      // alert(
+      // "⚠️ Please record your voice sample for fingerprint identification!"
+      // );
       // Scroll to voice section
       document
         .getElementById("voice-section")
@@ -239,7 +278,13 @@ export default function DoctorRegistration() {
 
     // Validation: Check required fields
     if (formData.availability.length === 0) {
-      alert("Please select at least one available day!");
+      Swal.fire({
+        icon: "warning",
+        title: "Availability Required",
+        text: "Please select at least one available day!",
+      });
+
+      //alert("Please select at least one available day!");
       return;
     }
 
@@ -259,10 +304,10 @@ export default function DoctorRegistration() {
 
       // Add all form fields
       registrationData.append("doctor_id", doctorId);
-      registrationData.append(
-        "name",
-        `${formData.firstName} ${formData.lastName}`
-      );
+      // registrationData.append(
+      //   "name",
+      //   `${formData.firstName} ${formData.lastName}`
+      // );
       registrationData.append("email", formData.email);
       registrationData.append("phone", formData.phone);
       registrationData.append("specialization", formData.specialization);
@@ -276,6 +321,27 @@ export default function DoctorRegistration() {
       registrationData.append("state", formData.state);
       registrationData.append("zip_code", formData.zipCode);
       registrationData.append("country", formData.country);
+      registrationData.append("date_of_birth", formData.dateOfBirth);
+      registrationData.append("gender", formData.gender);
+      registrationData.append("medical_degree", formData.medicalDegree);
+      registrationData.append("university", formData.university);
+      registrationData.append("graduation_year", formData.graduationYear);
+      registrationData.append("medical_license", formData.medicalLicense);
+      registrationData.append("license_state", formData.licenseState);
+      registrationData.append("license_expiry", formData.licenseExpiry);
+      registrationData.append("sub_specialization", formData.subSpecialization);
+      registrationData.append("experience", formData.experience);
+      registrationData.append("consultation_fee", formData.consultationFee);
+      registrationData.append(
+        "availability",
+        JSON.stringify(formData.availability)
+      );
+      registrationData.append("languages", JSON.stringify(selectedLanguages));
+      registrationData.append("bio", formData.bio);
+      registrationData.append("role", "doctor");
+      registrationData.append("status", "pending");
+      registrationData.append("firstName", formData.firstName);
+      registrationData.append("lastName", formData.lastName);
 
       // Send to backend
       const response = await fetch(`${endpoint}/api/doctors/register-doctor`, {
@@ -286,16 +352,26 @@ export default function DoctorRegistration() {
       const result = await response.json();
 
       if (result.status === "success") {
-        alert(
-          `✅ Registration Successful!\n\nDoctor ID: ${doctorId}\nVoice fingerprint created successfully!`
-        );
+        Swal.fire({
+          icon: "success",
+          title: "Registration Successful",
+          html: `Doctor ID: <strong>${doctorId}</strong><br/>Voice fingerprint created successfully!`,
+        });
+        //  alert(
+        //  `✅ Registration Successful!\n\nDoctor ID: ${doctorId}\nVoice fingerprint created successfully!`
+        //  );
         router.push("/login");
       } else {
         throw new Error(result.message || "Registration failed");
       }
     } catch (error) {
       console.error("Registration error:", error);
-      alert(`❌ Registration Failed\n\n${error.message}`);
+      Swal.fire({
+        icon: "error",
+        title: "Registration Failed",
+        text: error.message,
+      });
+      // alert(`❌ Registration Failed\n\n${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -426,17 +502,33 @@ export default function DoctorRegistration() {
                 <label className="block text-sm font-medium text-gray-700 mt-2 mb-2">
                   Password*
                 </label>
-                <div className="flex justify-between w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
-                  {" "}
+
+                <div className="flex items-center w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition">
+                  {/* INPUT FIELD */}
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder="Doe"
+                    placeholder="Enter password"
+                    className="flex-1 bg-transparent outline-none"
                   />
-                  <Eye size={20} />
+
+                  {/* EYE ICON */}
+                  {showPassword ? (
+                    <EyeOff
+                      size={20}
+                      className="cursor-pointer text-gray-600"
+                      onClick={() => setShowPassword(false)}
+                    />
+                  ) : (
+                    <Eye
+                      size={20}
+                      className="cursor-pointer text-gray-600"
+                      onClick={() => setShowPassword(true)}
+                    />
+                  )}
                 </div>
               </div>
             </section>
@@ -870,7 +962,9 @@ export default function DoctorRegistration() {
                       >
                         <input
                           type="checkbox"
-                          checked={formData.availability.includes(day)}
+                          checked={formData.availability.some(
+                            (a) => a.day === day
+                          )}
                           onChange={() => handleAvailabilityChange(day)}
                           className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                         />
@@ -879,6 +973,28 @@ export default function DoctorRegistration() {
                     ))}
                   </div>
                 </div>
+                {formData.availability.map((a, index) => (
+                  <div key={a.day} className="flex items-center gap-4">
+                    <span className="w-20 font-medium">{a.day}:</span>
+                    <input
+                      type="time"
+                      value={a.from}
+                      onChange={(e) =>
+                        handleTimeChange(index, "from", e.target.value)
+                      }
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span>to</span>
+                    <input
+                      type="time"
+                      value={a.to}
+                      onChange={(e) =>
+                        handleTimeChange(index, "to", e.target.value)
+                      }
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                ))}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Languages Spoken
