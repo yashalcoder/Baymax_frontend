@@ -4,6 +4,8 @@ import { User, Mail, Phone, MapPin, Droplet, AlertTriangle, Lock } from "lucide-
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import Image from "next/image";
+import SignupImg from "@/public/signup.avif";
 
 // Simple FormField component
 function FormField({ label, icon: Icon, children }) {
@@ -106,50 +108,120 @@ export default function PatientSignup() {
     }
   };
 
+  const bgStyle = { backgroundImage: `url(${SignupImg.src})` };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-soft p-6">
-      <form onSubmit={handleSubmit} className="card w-full max-w-xl p-8 space-y-6">
-        <h1 className="text-2xl font-bold text-center">Patient Signup</h1>
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-emerald-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden relative">
+          <div className="absolute inset-0 bg-cover bg-center opacity-10" style={bgStyle}></div>
+          <div className="relative z-10">
+            <div className="bg-gradient-to-r from-rose-600 to-emerald-600 px-8 py-6">
+              <h1 className="text-3xl font-bold text-white">Patient Registration</h1>
+              <p className="text-rose-100 mt-2">Join our healthcare network and manage your health records</p>
+            </div>
 
-        <FormField label="Full Name" icon={User}>
-          <Input name="name" value={formData.name} onChange={handleChange} placeholder="Enter full name" />
-        </FormField>
+            <form onSubmit={handleSubmit} className="p-8 space-y-8">
+              {/* Personal Information */}
+              <section>
+                <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                  <User className="mr-3 text-rose-600" size={28} />
+                  Personal Information
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                    <Input name="name" value={formData.name} onChange={handleChange} placeholder="Enter full name" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <Mail className="mr-2 text-gray-500" size={16} />
+                      Email Address *
+                    </label>
+                    <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="you@example.com" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <Phone className="mr-2 text-gray-500" size={16} />
+                      Contact Number *
+                    </label>
+                    <Input name="contact" value={formData.contact} onChange={handleChange} placeholder="Enter contact number" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <MapPin className="mr-2 text-gray-500" size={16} />
+                      Address *
+                    </label>
+                    <Input name="address" value={formData.address} onChange={handleChange} placeholder="Enter address" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <Lock className="mr-2 text-gray-500" size={16} />
+                      Password *
+                    </label>
+                    <Input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Minimum 6 characters" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <Lock className="mr-2 text-gray-500" size={16} />
+                      Confirm Password *
+                    </label>
+                    <Input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Re-enter password" required />
+                  </div>
+                </div>
+              </section>
 
-        <FormField label="Email" icon={Mail}>
-          <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter email" />
-        </FormField>
+              {/* Medical Information */}
+              <section>
+                <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                  <AlertTriangle className="mr-3 text-rose-600" size={28} />
+                  Medical Information
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <AlertTriangle className="mr-2 text-gray-500" size={16} />
+                      Allergies
+                    </label>
+                    <Input name="allergies" value={formData.allergies} onChange={handleChange} placeholder="e.g. pollen" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <Droplet className="mr-2 text-gray-500" size={16} />
+                      Blood Group
+                    </label>
+                    <Input name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} placeholder="e.g. B+" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <AlertTriangle className="mr-2 text-gray-500" size={16} />
+                      Major Disease
+                    </label>
+                    <Input name="majorDisease" value={formData.majorDisease} onChange={handleChange} placeholder="e.g. Asthma" />
+                  </div>
+                </div>
+              </section>
 
-        <FormField label="Contact Number" icon={Phone}>
-          <Input name="contact" value={formData.contact} onChange={handleChange} placeholder="Enter contact number" />
-        </FormField>
-
-        <FormField label="Address" icon={MapPin}>
-          <Input name="address" value={formData.address} onChange={handleChange} placeholder="Enter address" />
-        </FormField>
-
-        <FormField label="Password" icon={Lock}>
-          <Input type="password" name="password" value={formData.password} onChange={handleChange} />
-        </FormField>
-
-        <FormField label="Confirm Password" icon={Lock}>
-          <Input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} />
-        </FormField>
-
-        <FormField label="Allergies" icon={AlertTriangle}>
-          <Input name="allergies" value={formData.allergies} onChange={handleChange} />
-        </FormField>
-
-        <FormField label="Blood Group" icon={Droplet}>
-          <Input name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} />
-        </FormField>
-
-        <FormField label="Any Major Disease" icon={AlertTriangle}>
-          <Input name="majorDisease" value={formData.majorDisease} onChange={handleChange} />
-        </FormField>
-
-        <button className="w-full bg-brand text-white py-3 rounded-lg">Register</button>
-      </form>
+              {/* Submit Button */}
+              <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => router.push("/login/patient-login")}
+                  className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-8 py-3 rounded-lg transition font-medium shadow-lg bg-gradient-to-r from-rose-600 to-emerald-600 text-white hover:from-rose-700 hover:to-emerald-700"
+                >
+                  Complete Registration
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

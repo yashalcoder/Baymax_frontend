@@ -1,105 +1,5 @@
-// "use client"
-// import { useState } from "react"
-
-// export default function SignupPage() {
-//   const [role, setRole] = useState("patient")
-
-//   return (
-//     <main className="min-h-[88vh] bg-soft flex items-center justify-center px-4 py-16">
-//       <div className="w-full max-w-xl card p-6 md:p-8">
-//         <div className="flex flex-col items-center text-center gap-3">
-//           <img src="/images/auth-hero.png" alt="BayMax+ preview" className="h-16 w-auto object-contain" />
-//           <h1 className="text-3xl font-semibold">Create Account</h1>
-//           <p className="text-muted-foreground">Join BayMax+ for better healthcare management</p>
-//         </div>
-
-//         <div
-//           className="mt-5 grid grid-cols-2 gap-2 p-1 rounded-lg border bg-background"
-//           role="tablist"
-//           aria-label="Select role"
-//         >
-//           <button
-//             type="button"
-//             role="tab"
-//             aria-selected={role === "patient"}
-//             onClick={() => setRole("patient")}
-//             className={`px-4 py-2 rounded-md text-sm font-medium ${role === "patient" ? "bg-secondary" : ""}`}
-//           >
-//             Patient
-//           </button>
-//           <button
-//             type="button"
-//             role="tab"
-//             aria-selected={role === "doctor"}
-//             onClick={() => setRole("doctor")}
-//             className={`px-4 py-2 rounded-md text-sm font-medium ${role === "doctor" ? "bg-secondary" : ""}`}
-//           >
-//             Doctor
-//           </button>
-//         </div>
-
-//         <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()} aria-label="Create account form">
-//           <div>
-//             <label htmlFor="name" className="block text-sm font-medium mb-1">
-//               Full Name
-//             </label>
-//             <input
-//               id="name"
-//               type="text"
-//               required
-//               className="w-full rounded-md border bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-brand"
-//               placeholder="Enter your name"
-//             />
-//           </div>
-//           <div>
-//             <label htmlFor="email" className="block text-sm font-medium mb-1">
-//               Email
-//             </label>
-//             <input
-//               id="email"
-//               type="email"
-//               required
-//               className="w-full rounded-md border bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-brand"
-//               placeholder="your@email.com"
-//             />
-//           </div>
-//           <div>
-//             <label htmlFor="password" className="block text-sm font-medium mb-1">
-//               Password
-//             </label>
-//             <input
-//               id="password"
-//               type="password"
-//               required
-//               className="w-full rounded-md border bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-brand"
-//               placeholder="Create a password"
-//             />
-//           </div>
-//           <div>
-//             <label htmlFor="confirm" className="block text-sm font-medium mb-1">
-//               Confirm Password
-//             </label>
-//             <input
-//               id="confirm"
-//               type="password"
-//               required
-//               className="w-full rounded-md border bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-brand"
-//               placeholder="Confirm your password"
-//             />
-//           </div>
-//           <button
-//             type="submit"
-//             className="w-full px-4 py-3 rounded-md bg-brand text-white font-medium hover:opacity-90"
-//           >
-//             Create Account
-//           </button>
-//         </form>
-//       </div>
-//     </main>
-//   )
-// }
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   User,
   Mail,
@@ -113,20 +13,26 @@ import {
   Clock,
   DollarSign,
   Shield,
-  Camera,
   Plus,
   X,
+  Mic,
+  Square,
+  Play,
+  CheckCircle,
+  EyeOff,
+  AlertCircle,
+  Eye,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 export default function DoctorRegistration() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: "",
     password: "",
-    confirmPassword: "",
+    email: "",
     phone: "",
     alternatePhone: "",
     dateOfBirth: "",
@@ -150,18 +56,49 @@ export default function DoctorRegistration() {
     availability: [],
     languages: [],
     bio: "",
-    profilePhoto: null,
   });
+
+  // Voice Recording States
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [voiceBlob, setVoiceBlob] = useState(null);
+  const [voiceURL, setVoiceURL] = useState(null);
+  const [voiceStatus, setVoiceStatus] = useState("pending"); // pending, recording, recorded
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const timerRef = useRef(null);
+  const streamRef = useRef(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const endpoint = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [languageInput, setLanguageInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const roleRedirectMap = {
-    doctor: "/doctor",
-    patient: "/patient",
-    assistant: "/assistant",
-    pharmacy: "/pharmacy",
-    laboratory: "/laboratory",
+  // Timer for voice recording
+  useEffect(() => {
+    if (isRecording) {
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    }
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isRecording]);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const handleChange = (e) => {
@@ -169,13 +106,33 @@ export default function DoctorRegistration() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // const handleAvailabilityChange = (day) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     availability: prev.availability.includes(day)
+  //       ? prev.availability.filter((d) => d !== day)
+  //       : [...prev.availability, day],
+  //   }));
+  // };
   const handleAvailabilityChange = (day) => {
-    setFormData((prev) => ({
-      ...prev,
-      availability: prev.availability.includes(day)
-        ? prev.availability.filter((d) => d !== day)
-        : [...prev.availability, day],
-    }));
+    const exists = formData.availability.find((a) => a.day === day);
+    if (exists) {
+      setFormData({
+        ...formData,
+        availability: formData.availability.filter((a) => a.day !== day),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        availability: [...formData.availability, { day, from: "", to: "" }],
+      });
+    }
+  };
+
+  const handleTimeChange = (index, field, value) => {
+    const updated = [...formData.availability];
+    updated[index][field] = value;
+    setFormData({ ...formData, availability: updated });
   };
 
   const addLanguage = () => {
@@ -192,36 +149,233 @@ export default function DoctorRegistration() {
     setSelectedLanguages(selectedLanguages.filter((l) => l !== lang));
   };
 
+  // ============================================
+  // VOICE RECORDING FUNCTIONS
+  // ============================================
+
+  const handleStartVoiceRecording = async () => {
+    try {
+      // Check if mediaDevices is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Your browser doesn't support audio recording or this page needs to be served over HTTPS.",
+        });
+        //  alert(
+        //   "Your browser doesn't support audio recording or this page needs to be served over HTTPS."
+        //   );
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100,
+        },
+      });
+
+      streamRef.current = stream;
+
+      // Determine MIME type
+      let mimeType = "audio/webm";
+      if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+        mimeType = "audio/webm;codecs=opus";
+      } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+        mimeType = "audio/webm";
+      } else if (MediaRecorder.isTypeSupported("audio/ogg;codecs=opus")) {
+        mimeType = "audio/ogg;codecs=opus";
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        const url = URL.createObjectURL(blob);
+
+        setVoiceBlob(blob);
+        setVoiceURL(url);
+        setVoiceStatus("recorded");
+
+        // Stop all tracks
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+        }
+      };
+
+      mediaRecorder.start(1000);
+      setIsRecording(true);
+      setVoiceStatus("recording");
+      setRecordingTime(0);
+
+      // Auto-stop after 30 seconds
+      setTimeout(() => {
+        if (mediaRecorder.state === "recording") {
+          handleStopVoiceRecording();
+        }
+      }, 30000);
+    } catch (error) {
+      console.error("Microphone error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Microphone Access Denied",
+        text: "Could not access microphone. Please check permissions.",
+      });
+      // alert("Could not access microphone. Please check permissions.");
+    }
+  };
+
+  const handleStopVoiceRecording = () => {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === "recording"
+    ) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleRetakeVoice = () => {
+    setVoiceBlob(null);
+    setVoiceURL(null);
+    setVoiceStatus("pending");
+    setRecordingTime(0);
+  };
+
+  // ============================================
+  // FORM SUBMISSION
+  // ============================================
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-  try {
-    const res = await fetch("http://localhost:5000/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...formData,
-        role: "doctor", 
-      }),
-    });
+    // Validation: Check if voice sample is recorded
+    if (!voiceBlob) {
+      Swal.fire({
+        icon: "warning",
+        title: "Voice Sample Required",
+        text: "Please record your voice sample for fingerprint identification!",
+      });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.message || "Signup failed");
+      // alert(
+      // "⚠️ Please record your voice sample for fingerprint identification!"
+      // );
+      // Scroll to voice section
+      document
+        .getElementById("voice-section")
+        ?.scrollIntoView({ behavior: "smooth" });
       return;
     }
 
-    // ROLE-BASED REDIRECT
-    const redirectPath = roleRedirectMap[data.role];
-    router.push(redirectPath);
+    // Validation: Check required fields
+    if (formData.availability.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Availability Required",
+        text: "Please select at least one available day!",
+      });
 
-  } catch (error) {
-    console.error(error);
-    alert("Server error");
-  }
-};
+      //alert("Please select at least one available day!");
+      return;
+    }
 
+    setIsSubmitting(true);
+
+    try {
+      // Create FormData for multipart/form-data
+      const registrationData = new FormData();
+
+      // Add voice file
+      registrationData.append("file", voiceBlob, "voice_sample.webm");
+
+      // Generate doctor_id from email
+      const doctorId = `dr_${formData.email
+        .split("@")[0]
+        .replace(/[^a-zA-Z0-9]/g, "_")}`;
+
+      // Add all form fields
+      registrationData.append("doctor_id", doctorId);
+      // registrationData.append(
+      //   "name",
+      //   `${formData.firstName} ${formData.lastName}`
+      // );
+      registrationData.append("email", formData.email);
+      registrationData.append("phone", formData.phone);
+      registrationData.append("specialization", formData.specialization);
+      registrationData.append(
+        "hospital",
+        formData.currentHospital || "Not specified"
+      );
+      registrationData.append("password", formData.password);
+      registrationData.append("address", formData.address);
+      registrationData.append("city", formData.city);
+      registrationData.append("state", formData.state);
+      registrationData.append("zip_code", formData.zipCode);
+      registrationData.append("country", formData.country);
+      registrationData.append("date_of_birth", formData.dateOfBirth);
+      registrationData.append("gender", formData.gender);
+      registrationData.append("medical_degree", formData.medicalDegree);
+      registrationData.append("university", formData.university);
+      registrationData.append("graduation_year", formData.graduationYear);
+      registrationData.append("medical_license", formData.medicalLicense);
+      registrationData.append("license_state", formData.licenseState);
+      registrationData.append("license_expiry", formData.licenseExpiry);
+      registrationData.append("sub_specialization", formData.subSpecialization);
+      registrationData.append("experience", formData.experience);
+      registrationData.append("consultation_fee", formData.consultationFee);
+      registrationData.append(
+        "availability",
+        JSON.stringify(formData.availability)
+      );
+      registrationData.append("languages", JSON.stringify(selectedLanguages));
+      registrationData.append("bio", formData.bio);
+      registrationData.append("role", "doctor");
+      registrationData.append("status", "pending");
+      registrationData.append("firstName", formData.firstName);
+      registrationData.append("lastName", formData.lastName);
+
+      // Send to backend
+      const response = await fetch(`${endpoint}/api/doctors/register-doctor`, {
+        method: "POST",
+        body: registrationData,
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Registration Successful",
+          html: `Doctor ID: <strong>${doctorId}</strong><br/>Voice fingerprint created successfully!`,
+        });
+        //  alert(
+        //  `✅ Registration Successful!\n\nDoctor ID: ${doctorId}\nVoice fingerprint created successfully!`
+        //  );
+        router.push("/login");
+      } else {
+        throw new Error(result.message || "Registration failed");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Registration Failed",
+        text: error.message,
+      });
+      // alert(`❌ Registration Failed\n\n${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const days = [
     "Monday",
@@ -237,11 +391,13 @@ export default function DoctorRegistration() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="bg-hero-gradient to-indigo-600 px-8 py-6">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
             <h1 className="text-3xl font-bold text-white">
               Doctor Registration
             </h1>
-            <p className="text-blue-100 mt-2">Join our healthcare network</p>
+            <p className="text-blue-100 mt-2">
+              Join our healthcare network with voice fingerprint authentication
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
@@ -311,19 +467,6 @@ export default function DoctorRegistration() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Alternate Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="alternatePhone"
-                    value={formData.alternatePhone}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                    placeholder="+1 (555) 987-6543"
-                  />
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <Calendar className="mr-2 text-gray-500" size={16} />
                     Date of Birth *
@@ -353,6 +496,39 @@ export default function DoctorRegistration() {
                     <option value="female">Female</option>
                     <option value="other">Other</option>
                   </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mt-2 mb-2">
+                  Password*
+                </label>
+
+                <div className="flex items-center w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition">
+                  {/* INPUT FIELD */}
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter password"
+                    className="flex-1 bg-transparent outline-none"
+                  />
+
+                  {/* EYE ICON */}
+                  {showPassword ? (
+                    <EyeOff
+                      size={20}
+                      className="cursor-pointer text-gray-600"
+                      onClick={() => setShowPassword(false)}
+                    />
+                  ) : (
+                    <Eye
+                      size={20}
+                      className="cursor-pointer text-gray-600"
+                      onClick={() => setShowPassword(true)}
+                    />
+                  )}
                 </div>
               </div>
             </section>
@@ -625,6 +801,148 @@ export default function DoctorRegistration() {
               </div>
             </section>
 
+            {/* ============================================ */}
+            {/* VOICE FINGERPRINT SECTION - NEW! */}
+            {/* ============================================ */}
+            <section
+              id="voice-section"
+              className="border-4 border-blue-200 rounded-xl p-6 bg-blue-50"
+            >
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                <Mic className="mr-3 text-blue-600" size={28} />
+                Voice Fingerprint Authentication *
+              </h2>
+              <p className="text-sm text-gray-600 mb-6">
+                Record a 10-30 second voice sample for automatic identification
+                in patient conversations. This helps our system recognize you as
+                the doctor in transcriptions.
+              </p>
+
+              {/* Voice Recording Instructions */}
+              <div className="bg-white rounded-lg p-4 mb-6 border border-blue-200">
+                <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
+                  <AlertCircle className="mr-2 text-blue-600" size={20} />
+                  Recording Instructions:
+                </h3>
+                <p className="text-sm text-gray-700 mb-3">
+                  Please read the following text clearly, or speak naturally
+                  about your medical practice:
+                </p>
+                <div className="bg-blue-50 p-4 rounded border border-blue-200 text-sm text-gray-800 leading-relaxed">
+                  "Hello, my name is Dr. {formData.firstName || "[Your Name]"}.
+                  I am a {formData.specialization || "medical"} specialist at{" "}
+                  {formData.currentHospital || "[Your Hospital]"}. I am
+                  registering my voice for patient consultation transcription
+                  services to ensure accurate identification during medical
+                  conversations."
+                </div>
+              </div>
+
+              {/* Recording Controls */}
+              <div className="space-y-4">
+                {voiceStatus === "pending" && (
+                  <div className="flex flex-col items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={handleStartVoiceRecording}
+                      className="px-8 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition font-semibold shadow-lg flex items-center gap-3 text-lg"
+                    >
+                      <Mic size={24} />
+                      Start Voice Recording
+                    </button>
+                    <p className="text-xs text-gray-500">
+                      Click to begin recording (10-30 seconds recommended)
+                    </p>
+                  </div>
+                )}
+
+                {voiceStatus === "recording" && (
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="flex items-center gap-4 bg-red-50 border-2 border-red-300 rounded-xl px-8 py-4">
+                      <div className="w-4 h-4 bg-red-500 rounded-full animate-pulse"></div>
+                      <span className="text-2xl font-mono font-bold text-red-700">
+                        {formatTime(recordingTime)}
+                      </span>
+                      <span className="text-sm text-red-600">
+                        (Max: 30 seconds)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleStopVoiceRecording}
+                      className="px-8 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition font-semibold flex items-center gap-2"
+                    >
+                      <Square size={20} />
+                      Stop Recording
+                    </button>
+                    <p className="text-sm text-gray-600 animate-pulse">
+                      🎙️ Recording in progress... Speak clearly!
+                    </p>
+                  </div>
+                )}
+
+                {voiceStatus === "recorded" && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center gap-3 bg-green-50 border-2 border-green-300 rounded-xl px-6 py-4">
+                      <CheckCircle className="text-green-600" size={24} />
+                      <span className="font-semibold text-green-700">
+                        Voice Sample Recorded Successfully!
+                      </span>
+                    </div>
+
+                    {/* Audio Player */}
+                    <div className="bg-white rounded-lg p-4 border border-gray-300">
+                      <p className="text-sm font-medium text-gray-700 mb-2">
+                        Preview Your Recording:
+                      </p>
+                      <audio controls src={voiceURL} className="w-full">
+                        Your browser does not support audio playback.
+                      </audio>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Duration: {formatTime(recordingTime)} | Size:{" "}
+                        {voiceBlob ? (voiceBlob.size / 1024).toFixed(2) : 0} KB
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3 justify-center">
+                      <button
+                        type="button"
+                        onClick={handleRetakeVoice}
+                        className="px-6 py-2 border-2 border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition font-medium flex items-center gap-2"
+                      >
+                        <Mic size={18} />
+                        Re-record Voice
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Voice Status Indicator */}
+              <div className="mt-6 p-4 bg-white rounded-lg border border-gray-300">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">
+                    Voice Fingerprint Status:
+                  </span>
+                  {voiceStatus === "pending" && (
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                      ⚠️ Required
+                    </span>
+                  )}
+                  {voiceStatus === "recording" && (
+                    <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium animate-pulse">
+                      🎙️ Recording...
+                    </span>
+                  )}
+                  {voiceStatus === "recorded" && (
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                      ✅ Completed
+                    </span>
+                  )}
+                </div>
+              </div>
+            </section>
+
             {/* Availability & Languages */}
             <section>
               <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
@@ -644,7 +962,9 @@ export default function DoctorRegistration() {
                       >
                         <input
                           type="checkbox"
-                          checked={formData.availability.includes(day)}
+                          checked={formData.availability.some(
+                            (a) => a.day === day
+                          )}
                           onChange={() => handleAvailabilityChange(day)}
                           className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                         />
@@ -653,6 +973,28 @@ export default function DoctorRegistration() {
                     ))}
                   </div>
                 </div>
+                {formData.availability.map((a, index) => (
+                  <div key={a.day} className="flex items-center gap-4">
+                    <span className="w-20 font-medium">{a.day}:</span>
+                    <input
+                      type="time"
+                      value={a.from}
+                      onChange={(e) =>
+                        handleTimeChange(index, "from", e.target.value)
+                      }
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span>to</span>
+                    <input
+                      type="time"
+                      value={a.to}
+                      onChange={(e) =>
+                        handleTimeChange(index, "to", e.target.value)
+                      }
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                ))}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Languages Spoken
@@ -666,7 +1008,7 @@ export default function DoctorRegistration() {
                         e.key === "Enter" && (e.preventDefault(), addLanguage())
                       }
                       className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                      placeholder="e.g., English, Spanish"
+                      placeholder="e.g., English, Spanish, Urdu"
                     />
                     <button
                       type="button"
@@ -723,18 +1065,53 @@ export default function DoctorRegistration() {
             <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
               <button
                 type="button"
+                onClick={() => router.push("/login")}
                 className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                onClick={() => router.push("/login")}
-                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition font-medium shadow-lg"
+                disabled={isSubmitting || voiceStatus !== "recorded"}
+                className={`px-8 py-3 rounded-lg transition font-medium shadow-lg flex items-center gap-2 ${
+                  isSubmitting || voiceStatus !== "recorded"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+                }`}
               >
-                Complete Registration
+                {isSubmitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Registering...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle size={20} />
+                    Complete Registration
+                  </>
+                )}
               </button>
             </div>
+
+            {/* Warning if voice not recorded */}
+            {voiceStatus !== "recorded" && (
+              <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 flex items-start gap-3">
+                <AlertCircle
+                  className="text-yellow-600 flex-shrink-0 mt-1"
+                  size={20}
+                />
+                <div>
+                  <p className="font-semibold text-yellow-800">
+                    Voice Fingerprint Required
+                  </p>
+                  <p className="text-sm text-yellow-700 mt-1">
+                    Please record your voice sample to complete registration.
+                    This is required for automatic doctor identification in
+                    patient consultations.
+                  </p>
+                </div>
+              </div>
+            )}
           </form>
         </div>
       </div>
