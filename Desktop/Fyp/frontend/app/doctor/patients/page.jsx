@@ -1,3 +1,4 @@
+"use client";
 import { Card } from "@/components/ui/card";
 import {
   CardContent,
@@ -9,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Activity,
+  ArrowLeft,
   Calendar,
   FileText,
   Settings,
@@ -78,6 +80,17 @@ export default function PatientsPage() {
   ];
   return (
     <div className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+      <div className="flex justify-end m-5">
+        <Button
+          variant="outline"
+          onClick={() => (window.location.href = "/doctor")}
+          className="border-gray-300 hover:bg-gray-50 "
+        >
+          <ArrowLeft className="w-4 h-4 mr-2 " />
+          Back to Dashboard
+        </Button>
+      </div>
+
       <Card className="shadow-medical-lg m-5 border-border">
         <CardHeader className="border-b border-border">
           <div className="flex justify-between items-center">

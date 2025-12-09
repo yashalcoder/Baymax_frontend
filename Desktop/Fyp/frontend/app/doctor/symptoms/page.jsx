@@ -28,19 +28,19 @@ export default function DiagnosisPage() {
       {
         id: 1,
         name: "Persistent Cough",
-        severity: "high",
+        // severity: "high",
         duration: "2 weeks",
       },
-      { id: 2, name: "Fever", severity: "medium", duration: "3 days" },
-      { id: 3, name: "Chest Pain", severity: "high", duration: "1 week" },
-      { id: 4, name: "Fatigue", severity: "medium", duration: "2 weeks" },
+      { id: 2, name: "Fever", duration: "3 days" },
+      { id: 3, name: "Chest Pain", duration: "1 week" },
+      { id: 4, name: "Fatigue", duration: "2 weeks" },
       {
         id: 5,
         name: "Shortness of Breath",
-        severity: "high",
+
         duration: "5 days",
       },
-      { id: 6, name: "Headache", severity: "low", duration: "1 week" },
+      { id: 6, name: "Headache", duration: "1 week" },
     ],
     diseases: [
       {
@@ -300,9 +300,7 @@ export default function DiagnosisPage() {
               {filteredSymptoms.map((symptom) => (
                 <div
                   key={symptom.id}
-                  className={`p-4 rounded-lg border-2 ${getSeverityColor(
-                    symptom.severity
-                  )} transition-all hover:shadow-md`}
+                  className={`p-4 rounded-lg border-2  transition-all hover:shadow-md`}
                 >
                   {editingSymptom === symptom.id ? (
                     <div className="space-y-3">
@@ -333,13 +331,13 @@ export default function DiagnosisPage() {
                           Severity
                         </label>
                         <select
-                          defaultValue={symptom.severity}
+                          // defaultValue={symptom.severity}
                           id={`symptom-severity-${symptom.id}`}
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                          <option value="low">Low</option>
+                          {/* <option value="low">Low</option>
                           <option value="medium">Medium</option>
-                          <option value="high">High</option>
+                          <option value="high">High</option> */}
                         </select>
                       </div>
                       <div className="flex gap-2">

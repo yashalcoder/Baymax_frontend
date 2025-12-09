@@ -24,6 +24,7 @@ import {
   TrendingUp,
   Package,
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function DoctorViewReports() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -257,11 +258,22 @@ export default function DoctorViewReports() {
   };
 
   const handleDownloadReport = (report) => {
-    alert(`Downloading ${report.reportName} for ${report.patientName}`);
+    Swal.fire({
+      icon: "success",
+      title: "Download Started",
+      text: `Downloading ${report.reportName} for ${report.patientName}.`,
+    });
+    //alert(`Downloading ${report.reportName} for ${report.patientName}`);
   };
 
   const markAsReviewed = (reportId) => {
-    alert(`Marking report ${reportId} as reviewed`);
+    Swal.fire({
+      icon: "success",
+      title: "Marked as Reviewed",
+      text: `Report ${reportId} has been marked as reviewed.`,
+    });
+
+    //alert(`Marking report ${reportId} as reviewed`);
     setSelectedReport(null);
   };
 

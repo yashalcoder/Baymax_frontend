@@ -5,6 +5,13 @@ import { useState } from "react";
 
 export default function LoginMain() {
   const [role, setRole] = useState("doctor");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const router = useRouter();
 
   const handleContinue = () => {
