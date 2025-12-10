@@ -30,7 +30,7 @@ export default function Sidebar() {
     }
   }, []);
 
-  const menuItems = [
+  const doctorMenu = [
     { icon: Activity, label: "Dashboard", route: "/doctor" },
     { icon: Users, label: "Patients", route: "/doctor/patients" },
     { icon: Pill, label: "Consultation", route: "/doctor/transcription" },
@@ -44,6 +44,35 @@ export default function Sidebar() {
     },
     { icon: Settings, label: "Settings", route: "/doctor/settings" },
   ];
+const pharmacyMenu = [
+  { icon: Activity, label: "Dashboard", route: "/pharmacy" },
+
+  {
+    icon: Pill,
+    label: "Manage Medicines",
+    route: "/pharmacy/medicines",
+  },
+
+  {
+    icon: Hospital,
+    label: "Pharmacy Profile & Location",
+    route: "/pharmacy/profile",
+  },
+
+  {
+    icon: Settings,
+    label: "Settings",
+    route: "/pharmacy/settings",
+  },
+];
+console.log("user role",user?.role);
+// Selected menu based on user.role
+const menuItems =
+  user?.role === "doctor"
+    ? doctorMenu
+    : user?.role === "pharmacy"
+    ? pharmacyMenu
+    : [];
 
   const handleClick = (idx, route) => {
     setActiveIndex(idx);
