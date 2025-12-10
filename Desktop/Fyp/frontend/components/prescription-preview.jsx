@@ -1,5 +1,7 @@
 "use client";
 
+import Swal from "sweetalert2";
+
 export default function PrescriptionPreview({ data }) {
   if (!data) {
     return (
@@ -60,9 +62,15 @@ export default function PrescriptionPreview({ data }) {
   }
 
   function sendToPatient() {
-    alert(
-      "This is a demo. Integrate your messaging/email system to send the prescription to the patient."
-    );
+    Swal.fire({
+      icon: "info",
+      title: "Send to Patient",
+      text: "This is a demo. Integrate your messaging/email system to send the prescription to the patient.",
+    });
+    //
+    // alert(
+    //   "This is a demo. Integrate your messaging/email system to send the prescription to the patient."
+    // );
   }
 
   return (

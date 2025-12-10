@@ -14,7 +14,7 @@ export default function CTA() {
         </p>
       </div>
       <a
-        href="#"
+        href="/signup"
         className="px-5 py-3 rounded-md bg-hero-gradient text-white font-medium hover:opacity-90"
       >
         Get Started
