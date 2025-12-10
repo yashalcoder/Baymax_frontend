@@ -12,8 +12,12 @@ export default function LayoutContent({ children }) {
   const isAuthPage =
     pathname === "/login" || pathname === "/signup" || pathname === "/";
 
-  // Agar auth page hai, toh sirf children render karo
-  if (isAuthPage) {
+  // Lab and pharmacy pages should not show doctor navbar/sidebar
+  // const isLabOrPharmacyPage =
+  //   pathname?.startsWith("/lab") || pathname?.startsWith("/pharmacy") || pathname?.startsWith("/assistant");
+
+  // Agar auth page ya lab/pharmacy page hai, toh sirf children render karo
+  if (isAuthPage ) {
     return <>{children}</>;
   }
 
