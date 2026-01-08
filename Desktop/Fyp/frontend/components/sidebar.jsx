@@ -133,7 +133,6 @@ useEffect(() => {
     }
   }, [pathname]);
 console.log("user role",user?.role);
-// Add this useEffect in your Sidebar component, after the existing useEffect
 
 
 // Selected menu based on user.role
@@ -149,9 +148,6 @@ const menuItems =
     :user?.role==="laboratory"
     ?labMenu
     : [];
-
-// Remove this line:
-// const [activeIndex, setActiveIndex] = useState(0);
 
 // Update handleClick:
 const handleClick = (idx, route) => {
