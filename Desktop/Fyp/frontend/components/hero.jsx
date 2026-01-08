@@ -6,15 +6,15 @@ export default function Hero() {
       <div className="max-w-6xl mx-auto px-4 py-20 md:py-28">
         <div className="flex flex-col items-center text-center gap-6">
           <div className="text-xs flex gap-2 text-blue-700 md:text-sm px-3 py-1 rounded-full border bg-background shadow shadow-md font-semibold">
-            <Stethoscope size={20} /> Secure • Bilingual
+            <Stethoscope size={20} /> Secure • Reliable • Efficient
           </div>
           <h1 className="section-title md:text-6xl text-black">Baymax+</h1>
           <h2 className="md:text-5xl text-brand font-bold">
-            Smarter, Bilingual Healthcare
+            Smarter, Healthcare
           </h2>
           <p className="text-gray-500 max-w-2xl md:text-xl">
             Empowering doctors and patients in Pakistan with AI-powered
-            bilingual transcription, smart diagnosis suggestions, and affordable
+            transcription, smart diagnosis suggestions, and affordable
             medicine alternatives.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 mt-2">

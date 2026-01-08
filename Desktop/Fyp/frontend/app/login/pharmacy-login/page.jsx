@@ -9,13 +9,13 @@ export default function PharmacyLogin() {
   const bgStyle = { backgroundImage: `url(${HeroImg.src})` };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center px-4 py-10">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
         <div
-          className="relative overflow-hidden rounded-3xl shadow-2xl border border-emerald-200/50 min-h-[520px] bg-cover bg-center"
+          className="relative overflow-hidden rounded-3xl shadow-2xl border border-blue-200/50 min-h-[520px] bg-cover bg-center"
           style={bgStyle}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/65 via-emerald-800/35 to-white/15" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/65 via-blue-800/35 to-white/15" />
           <div className="relative z-10 p-8 lg:p-10 space-y-6 backdrop-blur-[2px]">
             <div className="text-center">
               <div className="mx-auto h-14 w-14 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center border border-emerald-200/60 shadow-sm">

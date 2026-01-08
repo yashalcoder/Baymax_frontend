@@ -20,8 +20,12 @@ export default function LayoutContent({ children }) {
   const isLabOrPharmacyPage =
     pathname?.startsWith("/lab") || pathname?.startsWith("/pharmacy") || pathname?.startsWith("/assistant");
 
+  // Lab and pharmacy pages should not show doctor navbar/sidebar
+  // const isLabOrPharmacyPage =
+  //   pathname?.startsWith("/lab") || pathname?.startsWith("/pharmacy") || pathname?.startsWith("/assistant");
+
   // Agar auth page ya lab/pharmacy page hai, toh sirf children render karo
-  if (isAuthPage || isLabOrPharmacyPage) {
+  if (isAuthPage ) {
     return <>{children}</>;
   }
 

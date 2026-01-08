@@ -57,8 +57,8 @@ const Transcription = () => {
 
   // Timer effect
   const user = JSON.parse(localStorage.getItem("user"));
-  const doctorId = user._id;
-
+  const doctorId = user.id;
+console.log("user fro frotend",user)
   useEffect(() => {
     if (isRecording && !isPaused) {
       timerRef.current = setInterval(() => {
@@ -232,6 +232,7 @@ const Transcription = () => {
     formData.append("audio", audioBlob, "recording.webm");
     formData.append("language", selectedLanguage);
     formData.append("doctorId", doctorId);
+    console.log("doctor id from fronte",doctorId)
     try {
       const response = await fetch(`${endpoint}/api/transcribe`, {
         method: "POST",

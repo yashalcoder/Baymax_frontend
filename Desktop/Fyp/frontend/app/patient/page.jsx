@@ -1,266 +1,290 @@
-"use client";
-import React, { useEffect, useState } from "react";
+"use client"
 
-/*
-PatientDashboard.jsx
-- A self-contained React component (default export) that renders a patient dashboard
-  showing patient's name, assigned doctor, current medications / prescriptions,
-  and daily insights (summary metrics).
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { 
+  Pill,
+  Calendar,
+  User,
+  FileText,
+  Mail,
+  IdCard
+} from "lucide-react"
 
-Integration notes:
-- This file intentionally uses semantic classNames that mirror a "doctor" folder
-  style (e.g. "doctor-header", "card", "doctor-list"). If your doctor folder
-  CSS lives elsewhere, import it by adjusting the path below (example provided).
-
-- The component attempts to fetch data from an endpoint:
-    GET /api/patients/:patientId/dashboard
-  expected response shape (example):
-  {
-    id: "p123",
-    name: "Aisha Khan",
-    age: 29,
-    gender: "F",
-    doctor: { id: "d456", name: "Dr. Ali" },
-    medications: [
-      { id: "m1", name: "Amoxicillin", dose: "500 mg", schedule: "2x/day", notes: "After food" },
-    ],
-    prescriptions: [ ... ],
-    dailyInsights: { steps: 4321, sleepHours: 7.2, adherenceRate: 0.92 }
+const PatientDashboard = () => {
+  // Patient profile (coming from backend in real app)
+  const patientProfile = {
+    id: "PAT-2025-001",
+    name: "Ali Ahmed Hassan",
+    email: "ali.ahmed@example.com",
+    contactNumber: "+92 300 1234567",
+    address: "House # 123, Street 4, Johar Town, Lahore, Pakistan",
+    cnic: "35202-1234567-1",
+    gender: "Male",
+    allergies: "Penicillin, Dust",
+    majorDisease: "Hypertension",
+    bloodGroup: "O+",
   }
 
-- If the API is not available during development, the component falls back to
-  a mocked dataset so you can preview the UI immediately.
+  const recentConsultations = [
+    {
+      id: 1,
+      doctorName: "Dr. Muhammad Ali",
+      specialization: "General Physician",
+      date: "2025-01-10",
+      diagnosis: "Common Cold",
+      medicines: ["Paracetamol 500mg", "Cough Syrup"],
+      status: "Completed",
+    },
+    {
+      id: 2,
+      doctorName: "Dr. Fatima Khan",
+      specialization: "Cardiologist",
+      date: "2025-01-05",
+      diagnosis: "Hypertension Check-up",
+      medicines: ["Amlodipine 5mg", "Aspirin 75mg"],
+      status: "Completed",
+    },
+    {
+      id: 3,
+      doctorName: "Dr. Hassan Raza",
+      specialization: "ENT Specialist",
+      date: "2024-12-28",
+      diagnosis: "Sinusitis",
+      medicines: ["Amoxicillin 500mg", "Nasal Spray"],
+      status: "Completed",
+    },
+  ]
 
-- Styling: Adjust the import below to reuse your existing doctor CSS. If your
-  project uses Tailwind, remove the CSS import and rely on Tailwind utility classes.
-*/
-
-// Example: import CSS from the doctor folder so visual style matches exactly.
-// Update path if needed. If you don't want this, remove the line below.
-// import "../doctor/doctor.css";
-
-// Small reusable subcomponents are declared in the same file for convenience.
-
-function Loading() {
-  return (
-    <div className="card loading" role="status">
-      <div>Loading patient dashboard...</div>
-    </div>
-  );
-}
-
-function ErrorBox({ message }) {
-  return (
-    <div className="card error" role="alert">
-      <strong>Error:</strong> {message}
-    </div>
-  );
-}
-
-function PatientHeader({ patient }) {
-  return (
-    <header className="doctor-header patient-header">
-      <div className="patient-name">
-        <h1>{patient.name}</h1>
-        <div className="meta">ID: {patient.id} • {patient.gender} • {patient.age} yrs</div>
-      </div>
-
-      <div className="doctor-info">
-        <div className="label">Assigned Doctor</div>
-        <div className="doctor-card">
-          <div className="doctor-name">{patient.doctor?.name ?? "-"}</div>
-          <div className="doctor-meta">ID: {patient.doctor?.id ?? "-"}</div>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function MedicationList({ medications }) {
-  if (!medications || medications.length === 0) return <div className="card">No current medications</div>;
+  const notifications = [
+    {
+      id: 1,
+      type: "prescription",
+      title: "New Prescription Ready",
+      message: "Your prescription from Dr. Muhammad Ali is ready for pickup",
+      time: "2 hours ago",
+      icon: Pill,
+      color: "bg-blue-100",
+      textColor: "text-blue-700",
+    },
+  ]
 
   return (
-    <div className="card meds-card">
-      <h3>Current Medications</h3>
-      <ul className="doctor-list meds-list">
-        {medications.map((m) => (
-          <li key={m.id} className="med-item">
-            <div className="med-main">
-              <div className="med-name">{m.name}</div>
-              <div className="med-dose">{m.dose} · {m.schedule}</div>
-            </div>
-            {m.notes && <div className="med-notes">Notes: {m.notes}</div>}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header with Patient Info */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Welcome / Banner Card */}
+          <div className="lg:col-span-2 bg-gradient-to-r bg-hero-gradient text-white rounded-2xl p-4 md:p-5 shadow-lg">
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">
+                  Welcome back, {patientProfile.name.split(" ")[0]}!
+                </h1>
+                <p className="text-blue-100 mb-4">
+                  Here&apos;s your health overview for today
+                </p>
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="w-4 h-4" />
+                  <span>Wednesday, December 10, 2025</span>
+                </div>
 
-function DailyInsights({ insights }) {
-  const adherencePercent = Math.round((insights?.adherenceRate ?? 0) * 100);
+                {/* Patient Quick Details in Blue Section */}
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs md:text-sm font-medium">
+                  {/* Email – bigger pill, 2 columns on desktop */}
+                  <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-2 col-span-1 md:col-span-2">
+                    <Mail className="w-4 h-4" />
+                    <span className="break-all">
+                      {patientProfile.email}
+                    </span>
+                  </div>
 
-  return (
-    <div className="card insights-card">
-      <h3>Daily Insights</h3>
-      <div className="insights-grid">
-        <div className="insight">
-          <div className="insight-label">Steps</div>
-          <div className="insight-value">{insights?.steps ?? "-"}</div>
-        </div>
-        <div className="insight">
-          <div className="insight-label">Sleep (hrs)</div>
-          <div className="insight-value">{insights?.sleepHours ?? "-"}</div>
-        </div>
-        <div className="insight">
-          <div className="insight-label">Adherence</div>
-          <div className="insight-value">{adherencePercent}%</div>
-        </div>
-      </div>
-    </div>
-  );
-}
+                  {/* Gender */}
+                  <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-2 col-span-1">
+                    <User className="w-4 h-4" />
+                    <span>{patientProfile.gender}</span>
+                  </div>
 
-// The main dashboard component
-export default function PatientDashboard({ patientId }) {
-  const [patient, setPatient] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Derive patientId from logged-in user if not provided
-  useEffect(() => {
-    if (!patientId) {
-      try {
-        const stored = localStorage.getItem("user");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (parsed?.id) {
-            setPatient((prev) => prev || { id: parsed.id, name: parsed.name || "Patient" });
-          }
-        }
-      } catch {
-        /* ignore */
-      }
-    }
-  }, [patientId]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Attempt to fetch from real backend endpoint
-        const res = await fetch(`/api/patients/${patientId}/dashboard`);
-        if (!res.ok) {
-          // If API returns 404/500/etc, fallback to mock data to keep UI working
-          throw new Error(`Server returned ${res.status}`);
-        }
-
-        const data = await res.json();
-        if (!cancelled) setPatient(data);
-      } catch (err) {
-        // Fallback mock data - remove this in production
-        console.warn("Warning: using mock patient data because fetch failed:", err.message);
-
-        const mock = {
-          id: patientId ?? "p-0001",
-          name: "Aisha Khan",
-          age: 29,
-          gender: "F",
-          doctor: { id: "d-100", name: "Dr. Ali Raza" },
-          medications: [
-            { id: "m-1", name: "Metformin", dose: "500 mg", schedule: "2x/day", notes: "With meals" },
-            { id: "m-2", name: "Atorvastatin", dose: "10 mg", schedule: "1x/night", notes: "Take before bed" },
-          ],
-          prescriptions: [
-            { id: "p-1", title: "Blood test - CBC", date: "2025-11-20" },
-          ],
-          dailyInsights: { steps: 4321, sleepHours: 7.2, adherenceRate: 0.92 },
-        };
-
-        if (!cancelled) setPatient(mock);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [patientId]);
-
-  if (loading) return <Loading />;
-  if (error) return <ErrorBox message={error} />;
-  if (!patient) return <ErrorBox message={"Patient not found"} />;
-
-  return (
-    <main className="patient-dashboard container">
-      <PatientHeader patient={patient} />
-
-      <section className="dashboard-grid">
-        <div className="column column-left">
-          <MedicationList medications={patient.medications} />
-
-          <div className="card prescriptions-card">
-            <h3>Prescriptions / Orders</h3>
-            {patient.prescriptions && patient.prescriptions.length > 0 ? (
-              <ul className="doctor-list prescriptions-list">
-                {patient.prescriptions.map((p) => (
-                  <li key={p.id} className="prescription-item">
-                    <div className="pres-title">{p.title}</div>
-                    <div className="pres-date">{p.date}</div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div>No recent prescriptions</div>
-            )}
-          </div>
-        </div>
-
-        <div className="column column-right">
-          <DailyInsights insights={patient.dailyInsights} />
-
-          <div className="card quick-actions">
-            <h3>Quick Actions</h3>
-            <div className="actions">
-              <button className="btn" onClick={() => alert("Message doctor (stub)")}>Message Doctor</button>
-              <button className="btn" onClick={() => alert("View full record (stub)")}>View Full Record</button>
+                  {/* CNIC */}
+                  <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-2 col-span-1 md:col-span-1">
+                    <IdCard className="w-4 h-4" />
+                    <span className="break-all">{patientProfile.cnic}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* Quick Patient Info Card */}
+          <Card className="shadow-lg border-2">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Patient Information
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Basic details saved during registration
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Patient ID</span>
+                <span className="font-semibold">{patientProfile.id}</span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Name</span>
+                <span className="font-semibold">{patientProfile.name}</span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Blood Group</span>
+                <span className="font-semibold text-red-600">
+                  {patientProfile.bloodGroup}
+                </span>
+              </div>
+
+              <div className="border-t pt-3 space-y-2">
+                <div className="flex justify-between gap-4">
+                  <div className="flex flex-col gap-1 w-full">
+                    <span className="text-muted-foreground">Contact No.</span>
+                    <span className="font-medium">
+                      {patientProfile.contactNumber}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <span className="text-muted-foreground">Full Address</span>
+                  <span className="font-medium text-xs md:text-sm leading-snug">
+                    {patientProfile.address}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </section>
 
-      <style jsx>{`
-        /* Basic layout only; override these styles with your existing doctor styles
-           by importing the doctor's CSS file as shown earlier. These are minimal
-           helpers to make the component readable if your project doesn't provide
-           doctor styles yet. */
-        .container { padding: 20px; max-width: 1100px; margin: 0 auto; }
-        .doctor-header { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:16px; }
-        .patient-name h1 { margin:0; font-size:1.5rem; }
-        .meta { color: #666; font-size:0.9rem; }
-        .doctor-card { background:#f7f7f9; padding:8px 12px; border-radius:8px; }
-        .card { background: #fff; border: 1px solid #e6e6e9; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 360px; gap: 16px; }
-        .meds-list { list-style:none; padding:0; margin:0; }
-        .med-item { padding:8px 0; border-bottom:1px dashed #eee; }
-        .med-main { display:flex; justify-content:space-between; }
-        .insights-grid { display:flex; gap:12px; }
-        .insight { flex:1; text-align:center; padding:8px; }
-        .insight-label { color:#666; font-size:0.9rem; }
-        .insight-value { font-size:1.25rem; font-weight:700; }
-        .btn { padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:#fff; cursor:pointer; margin-right:8px; }
+        {/* Medical Conditions Section */}
+        <Card className="shadow-lg border-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              🩺 Medical Conditions
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Important health details for safe treatment
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-4 pt-2">
+            {/* Allergies */}
+            <div className="bg-red-50 border border-red-200 p-3 rounded-xl shadow-sm">
+              <p className="text-xs uppercase font-medium text-red-600 mb-1">
+                Allergies
+              </p>
+              <p className="font-semibold text-sm text-gray-800">
+                {patientProfile.allergies || "No known allergies"}
+              </p>
+            </div>
 
-        @media (max-width: 900px) {
-          .dashboard-grid { grid-template-columns: 1fr; }
-        }
-      `}</style>
-    </main>
-  );
+            {/* Major Disease */}
+            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-xl shadow-sm">
+              <p className="text-xs uppercase font-medium text-yellow-700 mb-1">
+                Major Disease
+              </p>
+              <p className="font-semibold text-sm text-gray-800">
+                {patientProfile.majorDisease || "None recorded"}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notifications Banner */}
+        <Card className="shadow-lg border-l-4 border-l-blue-600">
+          <CardContent className="p-4">
+            {notifications.map((notif) => {
+              const IconComponent = notif.icon
+              return (
+                <div
+                  key={notif.id}
+                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-blue-50/50 transition-all cursor-pointer"
+                >
+                  <div className={`p-3 rounded-xl ${notif.color}`}>
+                    <IconComponent className={`w-6 h-6 ${notif.textColor}`} />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-base mb-1">
+                      {notif.title}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {notif.message}
+                    </p>
+                  </div>
+                  <span className="text-xs font-medium text-blue-600 whitespace-nowrap">
+                    {notif.time}
+                  </span>
+                </div>
+              )
+            })}
+          </CardContent>
+        </Card>
+
+        {/* Recent Consultations */}
+        <Card className="shadow-lg border">
+          <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-pink-50">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <FileText className="w-5 h-5 text-purple-600" />
+              </div>
+              Recent Consultations
+            </CardTitle>
+            <CardDescription>Your latest medical visits</CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 space-y-3">
+            {recentConsultations.map((consultation) => (
+              <div
+                key={consultation.id}
+                className="p-4 rounded-xl border-2 border-border hover:border-purple-300 hover:bg-purple-50/50 transition-all"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 className="font-semibold text-base">
+                      {consultation.doctorName}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {consultation.specialization}
+                    </p>
+                  </div>
+                  <span className="text-xs font-medium px-3 py-1 bg-green-100 text-green-700 rounded-full">
+                    {consultation.date}
+                  </span>
+                </div>
+                <div className="mb-3 pb-3 border-b">
+                  <p className="text-sm font-medium text-gray-700">
+                    <span className="text-muted-foreground">Diagnosis:</span>{" "}
+                    {consultation.diagnosis}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Prescribed Medicines:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {consultation.medicines.map((med, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full font-medium"
+                      >
+                        {med}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
 }
+
+export default PatientDashboard

@@ -13,7 +13,7 @@ const steps = [
   },
   {
     title: "Patient Empowerment",
-    desc: "Patients access records and compare medicine prices for the best value.",
+    desc: "Patients access their medical records and compare medicine prices for the best value.",
   },
 ];
 

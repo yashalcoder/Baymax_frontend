@@ -1,168 +1,134 @@
-"use client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Microscope, FileText, Plus, ChevronRight, Beaker, CheckCircle } from "lucide-react"
-import { useRouter } from "next/navigation"
+"use client";
 
-const LabDashboard = () => {
-  const router = useRouter()
+import React from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Microscope, FlaskConical } from "lucide-react";
 
+export default function LabDashboard() {
+  const router = useRouter();
+
+  // Dummy data for now
   const tests = [
-    {
-      id: 1,
-      patientName: "Ahmad Khan",
-      testType: "Complete Blood Count",
-      referredBy: "Dr. Ahmed",
-      orderDate: "2025-01-10",
-      status: "In Progress",
-    },
-    {
-      id: 2,
-      patientName: "Fatima Ali",
-      testType: "Lipid Panel",
-      referredBy: "Dr. Sarah",
-      orderDate: "2025-01-10",
-      status: "Completed",
-    },
-    {
-      id: 3,
-      patientName: "Hassan Raza",
-      testType: "Thyroid Function Tests",
-      referredBy: "Dr. Ahmed",
-      orderDate: "2025-01-09",
-      status: "Pending",
-    },
-    {
-      id: 4,
-      patientName: "Ayesha Malik",
-      testType: "Glucose Test",
-      referredBy: "Dr. Fatima",
-      orderDate: "2025-01-08",
-      status: "Completed",
-    },
-  ]
+    { id: 1, name: "Complete Blood Count (CBC)", category: "Blood Test", code: "CBC-01" },
+    { id: 2, name: "Lipid Profile", category: "Biochemistry", code: "LIP-12" },
+    { id: 3, name: "Thyroid Function Test", category: "Hormonal", code: "TFT-07" },
+    { id: 4, name: "Fasting Blood Sugar", category: "Glucose", code: "GLU-03" },
+  ];
 
-  const stats = [
-    {
-      label: "Total Tests",
-      value: "1,247",
-      icon: Microscope,
-      color: "text-purple-600",
-    },
-    {
-      label: "Today's Tests",
-      value: "34",
-      icon: Beaker,
-      color: "text-indigo-600",
-    },
-    {
-      label: "Completed",
-      value: "28",
-      icon: CheckCircle,
-      color: "text-green-600",
-    },
-    {
-      label: "Pending Results",
-      value: "6",
-      icon: FileText,
-      color: "text-orange-600",
-    },
-  ]
+  const totalTests = tests.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 p-6">
-      {/* Main Content */}
-      <main className="p-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          {/* Header */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-4xl font-bold font-poppins text-foreground mb-2">Welcome, Lab Manager</h1>
-              <p className="text-muted-foreground">
-                Here's your laboratory <span className="font-poppins">status today</span>
-              </p>
-            </div>
-            <Button
-              className="bg-hero-gradient text-white shadow-lg hover:opacity-90 transition-opacity"
-              onClick={() => router.push("/lab/tests")}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              New Test
-            </Button>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+        
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
+            Welcome, Lab User
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Manage your lab catalogue and view available tests.
+          </p>
+        </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat, idx) => (
-              <Card key={idx} className="bg-gradient-card border-border shadow-md hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground font-medium">{stat.label}</p>
-                      <p className="text-3xl font-bold text-foreground mt-2">{stat.value}</p>
-                    </div>
-                    <div
-                      className={`w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center ${stat.color}`}
-                    >
-                      <stat.icon className="w-6 h-6" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Tests List */}
-          <Card className="shadow-lg border-border">
-            <CardHeader className="border-b border-border">
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="text-2xl">Recent Tests</CardTitle>
-                  <CardDescription className="mt-1">Track and manage laboratory test requests</CardDescription>
-                </div>
+        {/* Summary cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* Total tests card */}
+          <Card className="border-none shadow-md bg-hero-gradient text-white">
+            <CardContent className="py-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm opacity-80">Total tests in lab</p>
+                <p className="mt-2 text-4xl font-semibold">{totalTests}</p>
+                <p className="mt-1 text-xs opacity-80">
+                  All active diagnostic tests currently available.
+                </p>
               </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-border">
-                {tests.map((test) => (
-                  <div
-                    key={test.id}
-                    className="p-6 hover:bg-secondary/50 transition-colors cursor-pointer flex items-center justify-between group"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-hero-gradient flex items-center justify-center text-white font-semibold shadow-md">
-                        <Microscope className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">{test.testType}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {test.patientName} • By: {test.referredBy} • {test.orderDate}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          test.status === "Completed"
-                            ? "bg-green-100 text-green-700"
-                            : test.status === "In Progress"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-amber-100 text-amber-700"
-                        }`}
-                      >
-                        {test.status}
-                      </span>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </div>
-                ))}
+
+              <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
+                <Microscope className="w-7 h-7" />
               </div>
             </CardContent>
           </Card>
+
+          {/* Info card */}
+          <Card className="border border-slate-200 shadow-sm">
+            <CardContent className="py-6 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-hero/10 flex items-center justify-center">
+                <FlaskConical className="w-6 h-6 text-hero" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-800">
+                  Keep your catalogue updated
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Ensure test names, codes, categories, and prices remain accurate.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
         </div>
+
+        {/* All tests (static list, not clickable) */}
+        <Card className="shadow-sm border-slate-200">
+          <CardHeader>
+            <CardTitle className="text-lg md:text-xl">All Tests</CardTitle>
+            <CardDescription>
+              List of all diagnostic tests available in your lab.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="p-0">
+            {tests.length === 0 ? (
+              <div className="py-10 text-center text-sm text-slate-500">
+                No tests added yet.
+              </div>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {tests.map((test) => (
+                  <li
+                    key={test.id}
+                    className="flex items-center justify-between px-5 py-4"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-11 h-11 rounded-2xl bg-hero/10 flex items-center justify-center">
+                        <Microscope className="w-5 h-5 text-hero" />
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">
+                          {test.name}
+                        </p>
+
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="inline-flex items-center rounded-full bg-hero/10 px-2.5 py-0.5 text-[11px] font-medium text-hero">
+                            {test.category}
+                          </span>
+
+                          {test.code && (
+                            <span className="text-[11px] text-slate-500">
+                              Code: {test.code}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
       </main>
     </div>
-  )
+  );
 }
-
-export default LabDashboard

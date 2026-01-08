@@ -12,14 +12,14 @@ export default function Footer() {
             </div>
           </a>
           <p className="text-sm text-muted-foreground mt-3">
-            Transforming healthcare in Pakistan with bilingual AI assistance,
+            Transforming healthcare in Pakistan with AI assistance,
             automated record keeping, and affordable medicine access.
           </p>
-          <div className="flex gap-4 text-xs text-muted-foreground mt-3">
+          {/* <div className="flex gap-4 text-xs text-muted-foreground mt-3">
             <span>DRAP Compliant</span>
             <span>HIPAA Certified</span>
             <span>Bilingual Support</span>
-          </div>
+          </div> */}
         </div>
         <div>
           <div className="font-semibold mb-3">Quick Links</div>

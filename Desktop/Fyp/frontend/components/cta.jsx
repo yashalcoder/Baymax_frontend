@@ -10,7 +10,7 @@ export default function CTA() {
           Create Your Account
         </h4>
         <p className="text-muted-foreground mt-2">
-          Your data is encrypted and protected with bank‑level security.
+          Your data is encrypted and protected with security, ensuring your privacy at all times.
         </p>
       </div>
       <a

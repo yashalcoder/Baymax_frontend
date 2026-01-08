@@ -6,6 +6,7 @@ import Image from "next/image";
 import Swal from "sweetalert2";
 import { Stethoscope, User, Building2, FlaskConical, UserCog } from "lucide-react";
 import HeroImg from "@/public/login.png";
+import loginImg from "@/public/logo.jpg";
 
 const roleMeta = {
   doctor: { label: "Doctor", icon: Stethoscope, gradient: "from-indigo-500 to-blue-500" },
@@ -35,33 +36,22 @@ export default function LoginMain() {
         <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/40 min-h-[520px]">
           <Image src={HeroImg} alt="Login" className="h-full w-full object-cover" priority />
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900/65 via-blue-900/35 to-transparent" />
-          <div className="absolute top-6 right-6 bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white border border-white/30">
+          {/* <div className="absolute top-6 right-6 bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white border border-white/30">
             Secure Access
-          </div>
-          <div className="absolute bottom-6 left-6 right-6 text-white space-y-3">
+          </div> */}
+          <div className="absolute bottom-6 left-6 right-6 text-blue space-y-3">
             <h1 className="text-3xl font-bold drop-shadow-sm">Welcome Back</h1>
-            <p className="text-sm text-white/90 leading-relaxed">
+            <p className="text-sm text-blue-600 leading-relaxed">
               Choose your role to continue to the respective dashboard.
             </p>
-            <div className="flex flex-wrap gap-2">
-              {roles.map((r) => (
-                <span
-                  key={r}
-                  className="px-3 py-1.5 bg-white/25 rounded-full text-xs font-semibold backdrop-blur border border-white/30 capitalize"
-                >
-                  {roleMeta[r].label}
-                </span>
-              ))}
-            </div>
+            
           </div>
         </div>
 
         {/* Selection card */}
         <div className="bg-white rounded-3xl shadow-2xl border border-blue-100 p-8 lg:p-10">
           <div className="text-center mb-6">
-            <div className="mx-auto h-14 w-14 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-lg">
-              Login
-            </div>
+            <Image src={loginImg} alt="Login Logo" className="mx-auto w-24 h-24 rounded-full" />
             <h2 className="mt-3 text-2xl font-bold text-slate-900">Sign in to continue</h2>
             <p className="text-slate-500">Select your role to proceed</p>
           </div>
