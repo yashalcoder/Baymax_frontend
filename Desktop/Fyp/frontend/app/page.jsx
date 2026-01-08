@@ -31,13 +31,13 @@ export default function Page() {
       </section>
 
       <section id="providers" className="bg-background">
-        <div className="max-w-6xl mx-auto px-4 py-20">
+        <div className="max-w-6xl mx-auto px-4 py-10">
           <Providers />
         </div>
       </section>
 
       <section id="patients" className="bg-background">
-        <div className="max-w-6xl mx-auto px-4 py-20">
+        <div className="max-w-6xl mx-auto px-0 py-5">
           <Patients />
         </div>
       </section>

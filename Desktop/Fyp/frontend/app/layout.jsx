@@ -18,8 +18,8 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "My App",
-  description: "Next.js Tailwind App",
+  title: "Baymax +",
+  description: "Healthcare Reimagined with AI-Powered Solutions",
 };
 
 export default function RootLayout({ children }) {
