@@ -21,13 +21,20 @@ const AudioVisualizer = ({ stream, isRecording, isPaused, recordingTime }) => {
     const cleanup = () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
       }
-      if (audioContextRef.current) {
-        audioContextRef.current
-          .close()
-          .catch((e) => console.error("Error closing AudioContext:", e));
+
+      if (
+        audioContextRef.current &&
+        audioContextRef.current.state !== "closed"
+      ) {
+        audioContextRef.current.close();
       }
+
+      audioContextRef.current = null;
+      analyserRef.current = null;
     };
+
 
     if (!stream || !isRecording) {
       cleanup();
@@ -57,16 +64,13 @@ const AudioVisualizer = ({ stream, isRecording, isPaused, recordingTime }) => {
     const barPadding = 2; // Space between bars
 
     const draw = () => {
-      if (!isRecording || isPaused) {
-        // Clear and exit if paused or stopped
+      if (!isRecording) return;
+
+      if (isPaused) {
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
-        // Optionally draw a dimmed state for paused
-        if (isPaused) {
-          ctx.fillStyle = "rgba(251, 191, 36, 0.1)";
-          ctx.fillRect(0, 0, WIDTH, HEIGHT);
-        }
         return;
       }
+
 
       animationRef.current = requestAnimationFrame(draw);
 
@@ -128,7 +132,16 @@ const AudioVisualizer = ({ stream, isRecording, isPaused, recordingTime }) => {
     }
 
     return cleanup;
-  }, [stream, isRecording, isPaused]);
+  }, [stream, isRecording]);
+  useEffect(() => {
+    if (!audioContextRef.current) return;
+
+    if (isPaused) {
+      audioContextRef.current.suspend();
+    } else {
+      audioContextRef.current.resume();
+    }
+  }, [isPaused]);
 
   if (!isRecording) return null;
 

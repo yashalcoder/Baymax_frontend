@@ -476,7 +476,7 @@ export default function DoctorRegistration() {
       Swal.fire({
         icon: "warning",
         title: "Voice Sample Required",
-        text: "Please record your voice sample for fingerprint identification!",
+        text: "Please record your voice sample for  identification!",
       });
 
       // Mark all fields as touched
@@ -487,7 +487,7 @@ export default function DoctorRegistration() {
       setTouched(allTouched);
 
       // alert(
-      // "⚠️ Please record your voice sample for fingerprint identification!"
+      // "⚠️ Please record your voice sample for  identification!"
       // );
       // Scroll to voice section
       document
@@ -575,10 +575,10 @@ export default function DoctorRegistration() {
         Swal.fire({
           icon: "success",
           title: "Registration Successful",
-          html: `Doctor ID: <strong>${doctorId}</strong><br/>Voice fingerprint created successfully!`,
+          html: `Doctor ID: <strong>${doctorId}</strong><br/>Voice  created successfully!`,
         });
         //  alert(
-        //  `✅ Registration Successful!\n\nDoctor ID: ${doctorId}\nVoice fingerprint created successfully!`
+        //  `✅ Registration Successful!\n\nDoctor ID: ${doctorId}\nVoice  created successfully!`
         //  );
         router.push("/login");
       } else {
@@ -615,7 +615,7 @@ export default function DoctorRegistration() {
               Doctor Registration
             </h1>
             <p className="text-blue-100 mt-2">
-              Join our healthcare network with voice fingerprint authentication
+              Join our healthcare network with voice  authentication
             </p>
           </div>
 
@@ -1186,7 +1186,7 @@ export default function DoctorRegistration() {
             </section>
 
             {/* ============================================ */}
-            {/* VOICE FINGERPRINT SECTION - NEW! */}
+            {/* VOICE  SECTION - NEW! */}
             {/* ============================================ */}
             <section
               id="voice-section"
@@ -1194,7 +1194,7 @@ export default function DoctorRegistration() {
             >
               <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
                 <Mic className="mr-3 text-blue-600" size={28} />
-                Voice Fingerprint Authentication *
+                Voice  Authentication *
               </h2>
               <p className="text-sm text-gray-600 mb-6">
                 Record a 10-30 second voice sample for automatic identification
@@ -1306,7 +1306,7 @@ export default function DoctorRegistration() {
               <div className="mt-6 p-4 bg-white rounded-lg border border-gray-300">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">
-                    Voice Fingerprint Status:
+                    Voice  Status:
                   </span>
                   {voiceStatus === "pending" && (
                     <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
@@ -1486,7 +1486,7 @@ export default function DoctorRegistration() {
                 />
                 <div>
                   <p className="font-semibold text-yellow-800">
-                    Voice Fingerprint Required
+                    Voice  Required
                   </p>
                   <p className="text-sm text-yellow-700 mt-1">
                     Please record your voice sample to complete registration.

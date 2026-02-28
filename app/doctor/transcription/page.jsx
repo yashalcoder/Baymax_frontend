@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
+  X,
   ArrowLeft,
   Mic,
   Square,
@@ -46,7 +47,7 @@ const Transcription = () => {
   const timerRef = useRef(null);
   const streamRef = useRef(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
-
+  const [uploadedFile,setUploadedFile]=useState("");
   // Timer effect
 
   // --- NEW REFS FOR VISUALIZATION ---
@@ -58,7 +59,6 @@ const Transcription = () => {
   // Timer effect
   const user = JSON.parse(localStorage.getItem("user"));
   const doctorId = user.id;
-console.log("user fro frotend",user)
   useEffect(() => {
     if (isRecording && !isPaused) {
       timerRef.current = setInterval(() => {
@@ -83,7 +83,30 @@ console.log("user fro frotend",user)
       .toString()
       .padStart(2, "0")}`;
   };
-
+const handleUploadFile = () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'audio/*,video/*'; // Adjust file types as needed
+  input.onchange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedFile({
+        file: file,
+        url: URL.createObjectURL(file),
+        name: file.name,
+        type: file.type
+      });
+    }
+  };
+  input.click();
+};
+// Remove file handler
+const handleRemoveFile = () => {
+  if (uploadedFile?.url) {
+    URL.revokeObjectURL(uploadedFile.url);
+  }
+  setUploadedFile(null);
+};
   const handleStartRecording = async () => {
     try {
       // Request microphone access
@@ -217,7 +240,7 @@ console.log("user fro frotend",user)
   };
 
   const handleSendToWhisper = async () => {
-    if (!audioBlob) {
+    if (!audioBlob && !uploadedFile) {
       Swal.fire({
         title: "No Audio",
         text: "Please record audio first!",
@@ -225,14 +248,21 @@ console.log("user fro frotend",user)
       });
       return;
     }
-
+    
     setIsTranscribing(true);
 
     const formData = new FormData();
+    if(uploadedFile){
+      formData.append("audio", uploadedFile.file, uploadedFile.name);
+    }
+    else{
     formData.append("audio", audioBlob, "recording.webm");
+
+    }
     formData.append("language", selectedLanguage);
     formData.append("doctorId", doctorId);
-    console.log("doctor id from fronte",doctorId)
+    
+
     try {
       const response = await fetch(`${endpoint}/api/transcribe`, {
         method: "POST",
@@ -435,6 +465,32 @@ console.log("user fro frotend",user)
                 ))}
               </div>
             </div> */}
+            {/* Display uploaded file */}
+{uploadedFile && (
+  <div className="m-6 p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
+    <div className="flex items-center justify-between mb-3">
+      <h3 className="font-semibold text-purple-900">Uploaded File</h3>
+      <Button
+        size="sm"
+        variant="ghost"
+        className="text-red-500 hover:text-red-700"
+        onClick={handleRemoveFile}
+      >
+        <X className="w-4 h-4" />
+      </Button>
+    </div>
+    <p className="text-sm text-gray-600 mb-3">{uploadedFile.name}</p>
+    {uploadedFile.type.startsWith('audio/') ? (
+      <audio controls className="w-full">
+        <source src={uploadedFile.url} type={uploadedFile.type} />
+      </audio>
+    ) : (
+      <video controls className="w-full max-h-64">
+        <source src={uploadedFile.url} type={uploadedFile.type} />
+      </video>
+    )}
+  </div>
+)}
             <AudioVisualizer
               stream={streamRef.current}
               isRecording={isRecording}
@@ -444,6 +500,7 @@ console.log("user fro frotend",user)
             {/* Recording Buttons */}
             <div className="flex flex-wrap gap-4">
               {!isRecording ? (
+                <>
                 <Button
                   size="lg"
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl transition-all px-8"
@@ -452,6 +509,16 @@ console.log("user fro frotend",user)
                   <Mic className="w-5 h-5 mr-2" />
                   Start Recording
                 </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all px-8"
+                  onClick={handleUploadFile}
+                >
+                  <Upload className="w-5 h-5 mr-2" />
+                  Upload File
+                </Button>
+                </>
               ) : (
                 <>
                   <Button
@@ -484,8 +551,9 @@ console.log("user fro frotend",user)
                 </>
               )}
 
+
               {/* Download and Send to Whisper buttons */}
-              {audioBlob && !isRecording && (
+              {((audioBlob && !isRecording) || uploadedFile) && (
                 <>
                   <Button
                     size="lg"
@@ -501,7 +569,7 @@ console.log("user fro frotend",user)
                     size="lg"
                     className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl px-8"
                     onClick={handleSendToWhisper}
-                    disabled={isTranscribing || !audioBlob} // Disable when loading or no audio
+                    disabled={isTranscribing || (!audioBlob && !uploadedFile)} // Disable when loading or no audio
                   >
                     {isTranscribing ? (
                       <>
