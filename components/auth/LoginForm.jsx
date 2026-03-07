@@ -40,9 +40,9 @@ export default function LoginForm({ role }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, role }),
       });
-
+      
       const data = await res.json();
-
+      console.log("Login response:", data);
       if (!res.ok || data.status === "error") {
         Swal.fire("Login Failed", data.message || "Invalid credentials", "error");
         return;
