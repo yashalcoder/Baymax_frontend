@@ -99,7 +99,12 @@ const assistantMenu = [
 ];
 
 
-
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  router.push("/login");
+};
 const patientMenu = [
   { icon: Activity, label: "Dashboard", route: "/patient" },
    { icon: FileText, label: "Prescription", route: "/patient/prescription" },
@@ -270,7 +275,7 @@ className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
         {!collapsed && (
           <div
             className="flex gap-2 p-2 text-sm font-semibold hover:cursor-pointer"
-            onClick={() => router.push("/")}
+            onClick={handleLogout}
           >
             <ArrowBigLeft size={20} /> Logout
           </div>
