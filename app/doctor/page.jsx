@@ -88,7 +88,25 @@ const DoctorDashboard = () => {
       color: "text-medical-success",
     },
   ];
-
+useEffect(() => {
+  async function fetchPatients() {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/my-patients`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      const patients = await response.json();
+      console.log(patients);
+    } catch (error) {
+      console.error("Error fetching patients:", error);
+    }
+  }
+  
+  fetchPatients();
+}, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
       {/* Main Content */}

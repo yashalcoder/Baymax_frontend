@@ -112,7 +112,7 @@ export default function SignupPage() {
                   key={role}
                   type="button"
                   onClick={() => setSelectedRole(role)}
-                  className={`flex items-center gap-2.5 p-3.5 rounded-2xl border transition-all shadow-sm hover:shadow-md ${
+                  className={`flex hover:cursor-pointer items-center gap-2.5 p-3.5 rounded-2xl border transition-all shadow-sm hover:shadow-md ${
                     active
                       ? "border-blue-500 bg-blue-50"
                       : "border-gray-200 bg-white"
@@ -138,7 +138,7 @@ export default function SignupPage() {
 
           <button
             onClick={handleContinue}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-sm shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all"
+            className="w-full hover:cursor-pointer py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-sm shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all"
           >
             Continue
           </button>
@@ -147,7 +147,7 @@ export default function SignupPage() {
             Already have an account?{" "}
             <button
               type="button"
-              className="text-blue-600 font-semibold hover:underline"
+              className="text-blue-600 hover:cursor-pointer font-semibold hover:underline"
               onClick={() => router.push("/login")}
             >
               Sign In

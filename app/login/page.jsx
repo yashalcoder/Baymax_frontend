@@ -65,7 +65,7 @@ export default function LoginMain() {
                   key={role}
                   type="button"
                   onClick={() => setSelectedRole(role)}
-                  className={`flex items-center gap-3 p-4 rounded-2xl border transition-all shadow-sm hover:shadow-md ${
+                  className={`flex items-center gap-3 p-4 rounded-2xl border transition-all hover:cursor-pointer shadow-sm hover:shadow-md ${
                     active ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white"
                   }`}
                 >
@@ -85,7 +85,7 @@ export default function LoginMain() {
 
           <button
             onClick={handleContinue}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all"
+            className="w-full py-3.5 rounded-xl hover:cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all"
           >
             Continue
           </button>

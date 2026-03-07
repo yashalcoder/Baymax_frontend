@@ -58,7 +58,7 @@ const Transcription = () => {
 
   // Timer effect
   const user = JSON.parse(localStorage.getItem("user"));
-  const doctorId = user.id;
+  const doctorId =user.id;//user.id; lgna yaha ya srf testing k liye kr rha hun, jab signup/login wala flow bn jaye ga to yaha se doctor id le lunga
   useEffect(() => {
     if (isRecording && !isPaused) {
       timerRef.current = setInterval(() => {
@@ -238,93 +238,96 @@ const handleRemoveFile = () => {
       URL.revokeObjectURL(url);
     }
   };
+ const token = localStorage.getItem("token");
 
-  const handleSendToWhisper = async () => {
-    if (!audioBlob && !uploadedFile) {
-      Swal.fire({
-        title: "No Audio",
-        text: "Please record audio first!",
-        icon: "warning",
-      });
-      return;
-    }
-    
-    setIsTranscribing(true);
+const handleSendToWhisper = async () => {
+  if (!audioBlob && !uploadedFile) {
+    Swal.fire({ title: "No Audio", text: "Please record audio first!", icon: "warning" });
+    return;
+  }
 
-    const formData = new FormData();
-    if(uploadedFile){
-      formData.append("audio", uploadedFile.file, uploadedFile.name);
-    }
-    else{
+  setIsTranscribing(true);
+  const formData = new FormData();
+
+  if (uploadedFile) {
+    formData.append("audio", uploadedFile.file, uploadedFile.name);
+  } else {
     formData.append("audio", audioBlob, "recording.webm");
+  }
 
+  formData.append("language", selectedLanguage);
+  formData.append("patientId", "69367c9527afe31f1ea10898");
+  // doctorId hatao — backend JWT se nikalega
+
+  try {
+    const response = await fetch(`${endpoint}/api/transcribe`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    formData.append("language", selectedLanguage);
-    formData.append("doctorId", doctorId);
-    
 
-    try {
-      const response = await fetch(`${endpoint}/api/transcribe`, {
-        method: "POST",
-        body: formData,
-      });
+    const data = await response.json();
+    console.log("Response data:", data);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+    if (data.consultationId) {
+      localStorage.setItem("consultationId", data.consultationId);
+      console.log("Stored consultationId:", data.consultationId);
+    }
 
-      const data = await response.json();
-      console.log("Response data:", data);
+    if (
+      data.transcription?.conversation &&
+      Array.isArray(data.transcription.conversation) &&
+      data.transcription.conversation.length > 0
+    ) {
+      const englishText = data.transcription.conversation
+        .map((item) => `${item.speaker} (${item.timestamp}): ${item.english}`)
+        .join("\n\n");
 
-      // Check if conversation array exists and has items
-      if (
-        data.conversation &&
-        Array.isArray(data.conversation) &&
-        data.conversation.length > 0
-      ) {
-        // Combine all conversation items into formatted strings
-        const englishText = data.conversation
-          .map((item) => `${item.speaker} (${item.timestamp}): ${item.english}`)
-          .join("\n\n");
+      const urduText = data.transcription.conversation
+        .map((item) => `${item.speaker} (${item.timestamp}): ${item.urdu}`)
+        .join("\n\n");
 
-        const urduText = data.conversation
-          .map((item) => `${item.speaker} (${item.timestamp}): ${item.urdu}`)
-          .join("\n\n");
-
-        setTranscription(englishText);
-        setUrduTranscription(urduText);
-
-        Swal.fire({
-          title: "Transcription Complete!",
-          text: `Successfully transcribed ${data.conversation.length} utterance(s)`,
-          icon: "success",
-        });
-      } else {
-        // Fallback if no conversation items
-        setTranscription(data.full_transcript || "No transcription available");
-        setUrduTranscription("No Urdu transcription available");
-
-        Swal.fire({
-          title: "Transcription Complete",
-          text: "No speaker-separated conversation detected",
-          icon: "info",
-        });
-      }
-
-      console.log("Audio blob ready for Whisper:", audioBlob);
-      console.log("File size:", (audioBlob.size / 1024).toFixed(2), "KB");
-    } catch (error) {
-      console.error("Error sending to Whisper:", error);
+      setTranscription(englishText);
+      setUrduTranscription(urduText);
 
       Swal.fire({
-        title: "Transcription Error",
-        text: error.message || "Error processing audio. Please try again.",
-        icon: "error",
+        title: "Transcription Complete!",
+        text: `Successfully transcribed ${data.transcription.conversation.length} utterance(s)`,
+        icon: "success",
       });
-    } finally {
-      setIsTranscribing(false);
+    } else {
+      setTranscription(data.full_transcript || "No transcription available");
+      setUrduTranscription("No Urdu transcription available");
+
+      Swal.fire({
+        title: "Transcription Complete",
+        text: "No speaker-separated conversation detected",
+        icon: "info",
+      });
     }
-  };
+
+    // ← Fixed crash
+    if (audioBlob) {
+      console.log("Audio blob size:", (audioBlob.size / 1024).toFixed(2), "KB");
+    }
+
+  } catch (error) {
+    console.error("Error sending to Whisper:", error);
+    Swal.fire({
+      title: "Transcription Error",
+      text: error.message || "Error processing audio. Please try again.",
+      icon: "error",
+    });
+  } finally {
+    setIsTranscribing(false);
+  }
+};
   const handleClearTranscription = () => {
     if (confirm("Are you sure you want to clear the transcription?")) {
       setTranscription("");
@@ -627,7 +630,7 @@ const handleRemoveFile = () => {
             )}
           </CardContent>
         </Card>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1  md:grid-cols-2 gap-4">
           {/* Transcription Card */}
           <Card className="shadow-lg border-gray-200">
             <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-white to-gray-50">
@@ -645,13 +648,13 @@ const handleRemoveFile = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleCopyTranscription}
                     disabled={!transcription}
-                    className="border-gray-300 hover:bg-gray-50"
+                    className="border-gray-300 hover:bg-gray-50 hover:cursor-pointer"
                   >
                     <Copy className="w-4 h-4 mr-2" />
                     Copy
@@ -661,7 +664,7 @@ const handleRemoveFile = () => {
                     size="sm"
                     onClick={handleDownloadTranscription}
                     disabled={!transcription}
-                    className="border-gray-300 hover:bg-gray-50"
+                    className="border-gray-300 hover:bg-gray-50 hover:cursor-pointer"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download
@@ -671,7 +674,7 @@ const handleRemoveFile = () => {
                     size="sm"
                     onClick={handleClearTranscription}
                     disabled={!transcription}
-                    className="border-red-300 text-red-600 hover:bg-red-50"
+                    className="border-red-300 text-red-600 hover:bg-red-50 hover:cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Clear
@@ -679,7 +682,7 @@ const handleRemoveFile = () => {
                   <Button
                     size="sm"
                     disabled={!transcription}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg hover:cursor-pointer"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Save Transcript
@@ -697,7 +700,7 @@ const handleRemoveFile = () => {
               />
 
               {/* Transcription Stats */}
-              <div className="mt-6 flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div className="mt-6 flex flex-wrap items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
                 <div className="flex gap-6 text-sm text-gray-600">
                   <span className="font-medium">
                     {transcription.length} characters
@@ -713,14 +716,14 @@ const handleRemoveFile = () => {
                   </span>
                 </div>
 
-                {transcription && (
+                {/* {transcription && (
                   <Badge
                     variant="outline"
                     className="border-green-300 text-green-700 bg-white"
                   >
                     Ready to save
                   </Badge>
-                )}
+                )} */}
               </div>
             </CardContent>
           </Card>
@@ -740,13 +743,13 @@ const handleRemoveFile = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleCopyUrduTranscription}
                     disabled={!urduTranscription}
-                    className="border-gray-300 hover:bg-gray-50"
+                    className="border-gray-300 hover:bg-gray-50 hover:cursor-pointer"
                   >
                     <Copy className="w-4 h-4 mr-2" />
                     Copy
@@ -756,7 +759,7 @@ const handleRemoveFile = () => {
                     size="sm"
                     onClick={handleDownloadUrduTranscription}
                     disabled={!urduTranscription}
-                    className="border-gray-300 hover:bg-gray-50"
+                    className="border-gray-300 hover:bg-gray-50 hover:cursor-pointer"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download
@@ -766,7 +769,7 @@ const handleRemoveFile = () => {
                     size="sm"
                     onClick={handleClearUrduTranscription}
                     disabled={!urduTranscription}
-                    className="border-red-300 text-red-600 hover:bg-red-50"
+                    className="border-red-300 text-red-600 hover:bg-red-50 hover:cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Clear
@@ -774,7 +777,7 @@ const handleRemoveFile = () => {
                   <Button
                     size="sm"
                     disabled={!urduTranscription}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg hover:cursor-pointer"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Save Transcript
@@ -792,7 +795,7 @@ const handleRemoveFile = () => {
               />
 
               {/* Transcription Stats */}
-              <div className="mt-6 flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div className="mt-6 flex flex-wrap items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
                 <div className="flex gap-6 text-sm text-gray-600">
                   <span className="font-medium">
                     {urduTranscription.length} characters
@@ -809,14 +812,14 @@ const handleRemoveFile = () => {
                   </span>
                 </div>
 
-                {urduTranscription && (
+                {/* {urduTranscription && (
                   <Badge
                     variant="outline"
-                    className="border-green-300 text-green-700 bg-white"
+                    className="border-green-300  text-green-700 bg-white"
                   >
                     Ready to save
                   </Badge>
-                )}
+                )} */}
               </div>
             </CardContent>
           </Card>

@@ -690,14 +690,14 @@ export default function PatientSignup() {
                 <button
                   type="button"
                   onClick={() => router.push("/login/patient-login")}
-                  className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                  className="px-8 py-3 hover:cursor-pointer border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  className="px-8 py-3 rounded-lg bg-hero-gradient text-white font-semibold hover:bg-blue-700 transition"
+                  className="px-8 hover:cursor-pointer py-3 rounded-lg bg-hero-gradient text-white font-semibold hover:bg-blue-700 transition"
                 >
                   Complete Registration
                 </button>

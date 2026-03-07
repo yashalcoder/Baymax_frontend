@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import {
   Search,
   AlertCircle,
@@ -16,81 +16,11 @@ export default function DiagnosisPage() {
   const [editingSymptom, setEditingSymptom] = useState(null);
   const [editingDisease, setEditingDisease] = useState(null);
   const [editingPatient, setEditingPatient] = useState(false);
-
-  const [diagnosisData, setDiagnosisData] = useState({
-    patientInfo: {
-      name: "Ahmad Khan",
-      age: 45,
-      date: "2025-01-10",
-      id: "P-2025-001",
-    },
-    symptoms: [
-      {
-        id: 1,
-        name: "Persistent Cough",
-        // severity: "high",
-        duration: "2 weeks",
-      },
-      { id: 2, name: "Fever", duration: "3 days" },
-      { id: 3, name: "Chest Pain", duration: "1 week" },
-      { id: 4, name: "Fatigue", duration: "2 weeks" },
-      {
-        id: 5,
-        name: "Shortness of Breath",
-
-        duration: "5 days",
-      },
-      { id: 6, name: "Headache", duration: "1 week" },
-    ],
-    diseases: [
-      {
-        id: 1,
-        name: "Pneumonia",
-        confidence: 85,
-        category: "Respiratory",
-        description:
-          "Inflammation of the lungs caused by bacterial or viral infection",
-        matchingSymptoms: [
-          "Persistent Cough",
-          "Fever",
-          "Chest Pain",
-          "Shortness of Breath",
-        ],
-        recommendations: [
-          "Immediate medical consultation required",
-          "Chest X-ray recommended",
-          "Antibiotic treatment may be needed",
-        ],
-      },
-      {
-        id: 2,
-        name: "Acute Bronchitis",
-        confidence: 72,
-        category: "Respiratory",
-        description:
-          "Inflammation of the bronchial tubes, often following a cold or flu",
-        matchingSymptoms: ["Persistent Cough", "Fever", "Fatigue"],
-        recommendations: [
-          "Rest and hydration",
-          "Over-the-counter cough medicine",
-          "Follow-up if symptoms persist",
-        ],
-      },
-      {
-        id: 3,
-        name: "Upper Respiratory Infection",
-        confidence: 65,
-        category: "Respiratory",
-        description: "Common infection affecting the nose, throat, and airways",
-        matchingSymptoms: ["Cough", "Fever", "Fatigue", "Headache"],
-        recommendations: [
-          "Adequate rest",
-          "Plenty of fluids",
-          "Symptom management with OTC medications",
-        ],
-      },
-    ],
-  });
+// At top of DiagnosisPage component
+const [loading, setLoading] = useState(true);
+const consultationId=localStorage.getItem("consultationId");
+const backendUrl=process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  const [diagnosisData, setDiagnosisData] = useState()
 
   const handleSavePatient = (updatedData) => {
     setDiagnosisData((prev) => ({
@@ -100,24 +30,47 @@ export default function DiagnosisPage() {
     setEditingPatient(false);
   };
 
-  const handleSaveSymptom = (updatedSymptom) => {
-    setDiagnosisData((prev) => ({
-      ...prev,
-      symptoms: prev.symptoms.map((s) =>
-        s.id === updatedSymptom.id ? updatedSymptom : s
-      ),
-    }));
-    setEditingSymptom(null);
+  // const handleSaveSymptom = (updatedSymptom) => {
+  //   setDiagnosisData((prev) => ({
+  //     ...prev,
+  //     symptoms: prev.symptoms.map((s) =>
+  //       s.id === updatedSymptom.id ? updatedSymptom : s
+  //     ),
+  //   }));
+  //   setEditingSymptom(null);
+  // };
+
+  // const handleSaveDisease = (updatedDisease) => {
+  //   setDiagnosisData((prev) => ({
+  //     ...prev,
+  //     diseases: prev.diseases.map((d) =>
+  //       d.id === updatedDisease.id ? updatedDisease : d
+  //     ),
+  //   }));
+  //   setEditingDisease(null);
+  // };
+const handleEditSymptom = (symptomId) => {
+    setEditingSymptom(symptomId);
+    const respone = fetch(`${backendUrl}/api/diagnosis/${consultationId}/symptom/${symptomId}`,{
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Symptom details:", data);
+      // You can set the symptom details in state if needed for editing
+    })
+    .catch(err => {
+      console.error("Error fetching symptom details:", err);
+    });
+
   };
 
-  const handleSaveDisease = (updatedDisease) => {
-    setDiagnosisData((prev) => ({
-      ...prev,
-      diseases: prev.diseases.map((d) =>
-        d.id === updatedDisease.id ? updatedDisease : d
-      ),
-    }));
-    setEditingDisease(null);
+  const handleEditDisease = (diseaseId) => {
+    setEditingDisease(diseaseId);
   };
 
   const getSeverityColor = (severity) => {
@@ -132,13 +85,233 @@ export default function DiagnosisPage() {
         return "bg-gray-100 text-gray-700 border-gray-300";
     }
   };
+  const handleSaveSymptom = (updatedSymptom) => {
+  // API call to backend
+  fetch(`${backendUrl}/api/diagnosis/${consultationId}/symptoms/${updatedSymptom.id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify({
+      name: updatedSymptom.name,
+      duration: updatedSymptom.duration,
+      severity: updatedSymptom.severity,
+    }),
+  });
 
+  // Update local state
+  setDiagnosisData((prev) => ({
+    ...prev,
+    symptoms: prev.symptoms.map((s) =>
+      s.id === updatedSymptom.id ? updatedSymptom : s
+    ),
+  }));
+  setEditingSymptom(null);
+};
+const handleSaveDisease = (updatedDisease) => {
+  // API call to backend
+  fetch(`${backendUrl}/api/diagnosis/${consultationId}/diseases/${updatedDisease.id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify(updatedDisease),
+  });
+
+  // Update local state
+  setDiagnosisData((prev) => ({
+    ...prev,
+    diseases: prev.diseases.map((d) =>
+      d.id === updatedDisease.id ? updatedDisease : d
+    ),
+  }));
+  setEditingDisease(null);
+};
+
+useEffect(() => {
+  fetch(`${backendUrl}/api/diagnosis/${consultationId}`,{
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  }
+  )
+    .then(res => res.json())
+    .then(data => {
+      setDiagnosisData(data);
+      setLoading(false);
+    });
+}, []);
+
+if (loading) return <div>Loading...</div>;
   const getConfidenceColor = (confidence) => {
     if (confidence >= 80) return "text-red-600";
     if (confidence >= 60) return "text-yellow-600";
     return "text-blue-600";
-  };
+  };const handleExportReport = async () => {
+  try {
+    const response = await fetch(`${backendUrl}/api/diagnosis/${consultationId}/export`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
 
+    const data = await response.json();
+
+    const printDiv = document.createElement('div');
+printDiv.id = 'print-report';
+printDiv.innerHTML = `
+  <style>
+    #print-report {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+    }
+    .fixed-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      text-align: center;
+      padding: 12px 40px 8px;
+      border-bottom: 2px solid #2563eb;
+      z-index: 1000;
+    }
+    .fixed-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fefce8;
+      border-top: 1px solid #fde047;
+      padding: 10px 40px;
+      z-index: 1000;
+    }
+    .main-content {
+      margin-top: 90px;
+      margin-bottom: 100px;
+      padding: 0 40px;
+    }
+  </style>
+
+  <!-- Fixed Header -->
+  <div class="fixed-header">
+    <h1 style="color: #2563eb; font-size: 18px; margin: 0;">BayMax+</h1>
+    <p style="color: #374151; font-size: 12px; margin: 2px 0;">Diagnosis Report</p>
+    <p style="color: #6b7280; font-size: 10px; margin: 0;">Date: ${new Date(data.reportDate).toLocaleDateString('en-PK', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+  </div>
+
+  <!-- Fixed Footer -->
+  <div class="fixed-footer">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <span style="color: #854d0e; font-size: 11px; font-weight: bold;">⚠️ Medical Disclaimer: </span>
+        <span style="color: #713f12; font-size: 10px;">
+          ${data.disclaimer || 'This is an AI-assisted diagnosis tool. All diagnoses should be verified by a qualified healthcare professional.'}
+        </span>
+      </div>
+      <span style="color: #9ca3af; font-size: 10px; white-space: nowrap; margin-left: 12px;">
+        Generated by BayMax+ | ${new Date().toLocaleDateString()}
+      </span>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+
+    <!-- Patient & Doctor Info -->
+    <div style="display: flex; gap: 12px; margin-bottom: 14px;">
+      <div style="flex: 1; background: #eff6ff; padding: 10px; border-radius: 6px;">
+        <h3 style="color: #1d4ed8; margin: 0 0 6px; font-size: 12px;">Patient Information</h3>
+        <p style="margin: 2px 0;"><strong>Name:</strong> ${diagnosisData.patientInfo.name}</p>
+        <p style="margin: 2px 0;"><strong>ID:</strong> ${diagnosisData.patientInfo.id}</p>
+        <p style="margin: 2px 0;"><strong>Age:</strong> ${diagnosisData.patientInfo.age} years</p>
+      </div>
+      <div style="flex: 1; background: #f0fdf4; padding: 10px; border-radius: 6px;">
+        <h3 style="color: #15803d; margin: 0 0 6px; font-size: 12px;">Doctor Information</h3>
+        <p style="margin: 2px 0;"><strong>Name:</strong> ${data.doctor || 'N/A'}</p>
+        <p style="margin: 2px 0;"><strong>Date:</strong> ${diagnosisData.patientInfo.date}</p>
+      </div>
+    </div>
+
+    <!-- Symptoms Table -->
+    <div style="margin-bottom: 14px;">
+      <h3 style="color: #1d4ed8; border-left: 3px solid #2563eb; padding-left: 8px; margin-bottom: 8px; font-size: 13px;">
+        Extracted Symptoms (${diagnosisData.symptoms.length})
+      </h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+        <thead>
+          <tr style="background: #2563eb; color: white;">
+            <th style="padding: 6px 8px; text-align: left; border: 1px solid #ddd;">#</th>
+            <th style="padding: 6px 8px; text-align: left; border: 1px solid #ddd;">Symptom</th>
+            <th style="padding: 6px 8px; text-align: left; border: 1px solid #ddd;">Duration</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${diagnosisData.symptoms.map((s, i) => `
+            <tr style="background: ${i % 2 === 0 ? '#f9fafb' : 'white'};">
+              <td style="padding: 6px 8px; border: 1px solid #ddd;">${i + 1}</td>
+              <td style="padding: 6px 8px; border: 1px solid #ddd;">${s.name}</td>
+              <td style="padding: 6px 8px; border: 1px solid #ddd;">${s.duration}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Diagnoses -->
+    <div style="margin-bottom: 14px;">
+      <h3 style="color: #1d4ed8; border-left: 3px solid #2563eb; padding-left: 8px; margin-bottom: 8px; font-size: 13px;">
+        Potential Diagnoses
+      </h3>
+      ${diagnosisData.diseases.map((d, i) => `
+        <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <h4 style="margin: 0; color: #111827; font-size: 13px;">${i + 1}. ${d.name}</h4>
+            <span style="color: ${d.confidence >= 80 ? '#dc2626' : d.confidence >= 60 ? '#d97706' : '#2563eb'}; font-weight: bold; font-size: 14px;">${d.confidence}%</span>
+          </div>
+          <span style="background: #f3e8ff; color: #7c3aed; padding: 1px 6px; border-radius: 4px; font-size: 10px;">${d.category || 'General'}</span>
+          <p style="color: #6b7280; margin: 4px 0; font-size: 11px;">${d.description || ''}</p>
+          <p style="margin: 4px 0; font-size: 11px;"><strong>Matching:</strong> <span style="color: #15803d;">${d.matchingSymptoms?.join(', ')}</span></p>
+          <div style="margin-top: 4px; font-size: 11px;">
+            <strong>Recommendations:</strong>
+            <ul style="margin: 2px 0; padding-left: 16px;">
+              ${d.recommendations?.map(r => `<li>${r}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+<!-- Disclaimer -->
+    <div style="background: #fefce8; border: 1px solid #fde047; border-radius: 6px; padding: 10px;">
+      <h4 style="color: #854d0e; margin: 0 0 4px; font-size: 12px;">⚠️ Medical Disclaimer</h4>
+      <p style="color: #713f12; font-size: 11px; margin: 0;">
+        ${data.disclaimer || 'This is an AI-assisted diagnosis tool. All diagnoses should be verified by a qualified healthcare professional.'}
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 12px; padding-top: 8px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 10px;">
+      Generated by BayMax+ | ${new Date().toLocaleString()}
+    </div>
+
+  </div>
+`;
+    document.body.appendChild(printDiv);
+    window.print();
+    document.body.removeChild(printDiv);
+
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Export failed. Please try again.");
+  }
+};
   const filteredSymptoms = diagnosisData.symptoms.filter((symptom) =>
     symptom.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -342,20 +515,12 @@ export default function DiagnosisPage() {
                       </div>
                       <div className="flex gap-2">
                         <button
-                          onClick={() => {
-                            handleSaveSymptom({
-                              ...symptom,
-                              name: document.getElementById(
-                                `symptom-name-${symptom.id}`
-                              ).value,
-                              duration: document.getElementById(
-                                `symptom-duration-${symptom.id}`
-                              ).value,
-                              severity: document.getElementById(
-                                `symptom-severity-${symptom.id}`
-                              ).value,
-                            });
-                          }}
+                          onClick={() => handleSaveSymptom({
+                            id: symptom.id,
+                            name: document.getElementById(`symptom-name-${symptom.id}`).value,
+                            duration: document.getElementById(`symptom-duration-${symptom.id}`).value,
+                            severity: document.getElementById(`symptom-severity-${symptom.id}`).value,
+                          })}
                           className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                         >
                           Save
@@ -487,37 +652,15 @@ export default function DiagnosisPage() {
                       </div>
                       <div className="flex gap-2">
                         <button
-                          onClick={() => {
-                            handleSaveDisease({
-                              ...disease,
-                              name: document.getElementById(
-                                `disease-name-${disease.id}`
-                              ).value,
-                              category: document.getElementById(
-                                `disease-category-${disease.id}`
-                              ).value,
-                              confidence: parseInt(
-                                document.getElementById(
-                                  `disease-confidence-${disease.id}`
-                                ).value
-                              ),
-                              description: document.getElementById(
-                                `disease-description-${disease.id}`
-                              ).value,
-                              matchingSymptoms: document
-                                .getElementById(
-                                  `disease-symptoms-${disease.id}`
-                                )
-                                .value.split(",")
-                                .map((s) => s.trim()),
-                              recommendations: document
-                                .getElementById(
-                                  `disease-recommendations-${disease.id}`
-                                )
-                                .value.split("\n")
-                                .filter((r) => r.trim()),
-                            });
-                          }}
+                          onClick={() => handleSaveDisease({
+                            id: disease.id,
+                            name: document.getElementById(`disease-name-${disease.id}`).value,
+                            category: document.getElementById(`disease-category-${disease.id}`).value,
+                            confidence: parseInt(document.getElementById(`disease-confidence-${disease.id}`).value),
+                            description: document.getElementById(`disease-description-${disease.id}`).value,
+                            matchingSymptoms: document.getElementById(`disease-symptoms-${disease.id}`).value.split(",").map(s => s.trim()),
+                            recommendations: document.getElementById(`disease-recommendations-${disease.id}`).value.split("\n").map(r => r.trim()),
+                          })}
                           className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                         >
                           Save
@@ -618,16 +761,15 @@ export default function DiagnosisPage() {
           </div>
         </div>
 
-        <div className="mt-6 flex gap-4 justify-end">
-          <button className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <FileText className="w-4 h-4" />
-            Export Report
-          </button>
-          <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-            <Pill className="w-4 h-4" />
-            Create Prescription
-          </button>
-        </div>
+       <div className="mt-6 flex gap-4 justify-end no-print">
+  <button
+    onClick={handleExportReport}
+    className="px-6 py-2 hover:cursor-pointer border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+  >
+    <FileText className="w-4 h-4" />
+    Export Report
+  </button>
+</div>
 
         <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex gap-3">
           <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />

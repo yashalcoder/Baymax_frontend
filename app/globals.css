@@ -9,7 +9,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
+@media print {
+  body * { visibility: hidden; }
+  #print-report, #print-report * { visibility: visible; }
+  #print-report { position: absolute; left: 0; top: 0; width: 100%; }
+  .no-print { display: none !important; }
 
+  @page {
+    size: A4;
+    margin: 0mm;
+  }
+}
 :root {
   --font-primary: 'Roboto', sans-serif;
 
