@@ -36,7 +36,7 @@ export default function DoctorLoginPage() {
           role: "doctor"      // 🔥 fixed role
         }),
       });
-
+      console.log('Login response',response);
       const data = await response.json();
       if (data.status === "success") {
         localStorage.setItem("token", data.data.token);

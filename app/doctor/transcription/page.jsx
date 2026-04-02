@@ -257,6 +257,7 @@ const handleSendToWhisper = async () => {
 
   formData.append("language", selectedLanguage);
   formData.append("patientId", "69367c9527afe31f1ea10898");
+  localStorage.setItem("patientId", "69367c9527afe31f1ea10898");
   // doctorId hatao — backend JWT se nikalega
 
   try {

@@ -10,7 +10,7 @@ import {
   Pill,
   Activity,
 } from "lucide-react";
-
+import {usePatient} from "@/components/Context/PatientContext";
 export default function DiagnosisPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingSymptom, setEditingSymptom] = useState(null);
@@ -21,7 +21,7 @@ const [loading, setLoading] = useState(true);
 const consultationId=localStorage.getItem("consultationId");
 const backendUrl=process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
   const [diagnosisData, setDiagnosisData] = useState()
-
+const {setPatientData} = usePatient();
   const handleSavePatient = (updatedData) => {
     setDiagnosisData((prev) => ({
       ...prev,
@@ -29,7 +29,7 @@ const backendUrl=process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
     }));
     setEditingPatient(false);
   };
-
+  
   // const handleSaveSymptom = (updatedSymptom) => {
   //   setDiagnosisData((prev) => ({
   //     ...prev,
@@ -137,11 +137,13 @@ useEffect(() => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
+    //yaha pr patientid pass kr aur conroller mein patient name waegara users table s se nikalwa le rather then finding from consualatiaon
   }
   )
     .then(res => res.json())
     .then(data => {
       setDiagnosisData(data);
+      setPatientData(data.patientInfo); // Set patient data in context
       setLoading(false);
     });
 }, []);
@@ -151,7 +153,8 @@ if (loading) return <div>Loading...</div>;
     if (confidence >= 80) return "text-red-600";
     if (confidence >= 60) return "text-yellow-600";
     return "text-blue-600";
-  };const handleExportReport = async () => {
+  };
+  const handleExportReport = async () => {
   try {
     const response = await fetch(`${backendUrl}/api/diagnosis/${consultationId}/export`, {
       method: "GET",
@@ -359,11 +362,11 @@ printDiv.innerHTML = `
                     Date
                   </label>
                   <input
-                    type="date"
-                    defaultValue={diagnosisData.patientInfo.date}
-                    id="patient-date"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+  type="date"
+  defaultValue={new Date().toISOString().split("T")[0]} // ✅ current date "2026-03-08"
+  id="patient-date"
+  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -431,7 +434,7 @@ printDiv.innerHTML = `
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <Calendar className="w-4 h-4" />
-                  <span>Date: {diagnosisData.patientInfo.date}</span>
+                  <span>Date: {new Date().toISOString().split("T")[0]}</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <Activity className="w-4 h-4" />
