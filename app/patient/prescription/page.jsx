@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -14,174 +14,146 @@ import {
   AlertCircle,
   Phone,
   MapPin,
+  Loader2,
 } from "lucide-react"
 
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+
 export default function PrescriptionPage() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery]         = useState("")
+  const [prescriptions, setPrescriptions]     = useState([])
+  const [loading, setLoading]                 = useState(true)
+  const [error, setError]                     = useState(null)
+  const [downloadingId, setDownloadingId]     = useState(null)
 
-  const prescriptions = [
-    {
-      id: "RX-2025-001",
-      doctorName: "Dr. Muhammad Ali",
-      specialization: "General Physician",
-      hospital: "City General Hospital",
-      date: "2025-01-10",
-      diagnosis: "Common Cold",
-      status: "active",
-      validUntil: "2025-01-17",
-      medicines: [
-        {
-          name: "Paracetamol",
-          dosage: "500mg",
-          frequency: "3 times a day",
-          duration: "5 days",
-          timing: "After meals",
-          instructions: "Take with water",
-        },
-        {
-          name: "Cough Syrup",
-          dosage: "10ml",
-          frequency: "2 times a day",
-          duration: "7 days",
-          timing: "Morning & Night",
-          instructions: "Shake well before use",
-        },
-      ],
-      contactNumber: "+92 300 1234567",
-    },
-    {
-      id: "RX-2025-002",
-      doctorName: "Dr. Fatima Khan",
-      specialization: "Cardiologist",
-      hospital: "Heart Care Center",
-      date: "2025-01-05",
-      diagnosis: "Hypertension Management",
-      status: "active",
-      validUntil: "2025-02-05",
-      medicines: [
-        {
-          name: "Amlodipine",
-          dosage: "5mg",
-          frequency: "Once daily",
-          duration: "30 days",
-          timing: "Morning",
-          instructions: "Take on empty stomach",
-        },
-        {
-          name: "Aspirin",
-          dosage: "75mg",
-          frequency: "Once daily",
-          duration: "30 days",
-          timing: "After dinner",
-          instructions: "Take with food",
-        },
-      ],
-      contactNumber: "+92 321 7654321",
-    },
-    {
-      id: "RX-2024-003",
-      doctorName: "Dr. Hassan Raza",
-      specialization: "ENT Specialist",
-      hospital: "ENT Care Clinic",
-      date: "2024-12-28",
-      diagnosis: "Sinusitis",
-      status: "completed",
-      validUntil: "2025-01-04",
-      medicines: [
-        {
-          name: "Amoxicillin",
-          dosage: "500mg",
-          frequency: "3 times a day",
-          duration: "7 days",
-          timing: "Every 8 hours",
-          instructions: "Complete full course",
-        },
-        {
-          name: "Nasal Spray",
-          dosage: "2 sprays",
-          frequency: "2 times a day",
-          duration: "10 days",
-          timing: "Morning & Night",
-          instructions: "Use as directed",
-        },
-      ],
-      contactNumber: "+92 333 9876543",
-    },
-    {
-      id: "RX-2024-004",
-      doctorName: "Dr. Sarah Ahmed",
-      specialization: "Dermatologist",
-      hospital: "Skin Care Hospital",
-      date: "2024-12-15",
-      diagnosis: "Skin Allergy",
-      status: "expired",
-      validUntil: "2024-12-22",
-      medicines: [
-        {
-          name: "Cetirizine",
-          dosage: "10mg",
-          frequency: "Once daily",
-          duration: "7 days",
-          timing: "Night",
-          instructions: "May cause drowsiness",
-        },
-        {
-          name: "Hydrocortisone Cream",
-          dosage: "1%",
-          frequency: "Apply twice",
-          duration: "7 days",
-          timing: "Morning & Night",
-          instructions: "Apply thin layer on affected area",
-        },
-      ],
-      contactNumber: "+92 345 1122334",
-    },
-  ]
+  useEffect(() => {
+    const fetchPrescriptions = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        if (!token) {
+          setError("No auth token found. Please log in again.")
+          setLoading(false)
+          return
+        }
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "active":
-        return (
-          <div className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-            <CheckCircle className="w-3 h-3" />
-            Active
-          </div>
-        )
-      case "completed":
-        return (
-          <div className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-            <CheckCircle className="w-3 h-3" />
-            Completed
-          </div>
-        )
-      case "expired":
-        return (
-          <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
-            <XCircle className="w-3 h-3" />
-            Expired
-          </div>
-        )
-      default:
-        return null
+        const res = await fetch(`${API}/api/patient/my-prescriptions`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        })
+
+        const data = await res.json()
+
+        if (!res.ok || !data.success) {
+          setError(data.message || "Failed to load prescriptions.")
+          setLoading(false)
+          return
+        }
+
+        setPrescriptions(data.prescriptions || [])
+      } catch (err) {
+        console.error("Prescription fetch error:", err)
+        setError("Could not connect to server.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPrescriptions()
+  }, [])
+
+  const getStatusBadge = (prescription) => {
+    // Determine status: if createdAt + 30 days > today → active, else completed
+    const created    = new Date(prescription.createdAt)
+    const expireDate = new Date(created)
+    expireDate.setDate(expireDate.getDate() + 30)
+    const now = new Date()
+
+    let status = now < expireDate ? "active" : "completed"
+
+    if (status === "active") {
+      return (
+        <div className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+          <CheckCircle className="w-3 h-3" /> Active
+        </div>
+      )
+    }
+    return (
+      <div className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
+        <XCircle className="w-3 h-3" /> Completed
+      </div>
+    )
+  }
+
+  const handleDownloadPDF = async (prescriptionId) => {
+    setDownloadingId(prescriptionId)
+    try {
+      const token = localStorage.getItem("token")
+      const res = await fetch(
+        `${API}/api/patient/prescription/${prescriptionId}/pdf`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        alert(data.message || "Failed to download prescription.")
+        return
+      }
+
+      const blob = await res.blob()
+      const url  = window.URL.createObjectURL(blob)
+      const a    = document.createElement("a")
+      a.href     = url
+      a.download = `prescription-${prescriptionId}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error("PDF download error:", err)
+      alert("Could not download prescription.")
+    } finally {
+      setDownloadingId(null)
     }
   }
 
-  const filteredPrescriptions = prescriptions.filter((prescription) => {
+  const filteredPrescriptions = prescriptions.filter((rx) => {
     const q = searchQuery.toLowerCase()
     return (
-      prescription.doctorName.toLowerCase().includes(q) ||
-      prescription.diagnosis.toLowerCase().includes(q) ||
-      prescription.id.toLowerCase().includes(q)
+      rx.doctorId?.name?.toLowerCase().includes(q) ||
+      rx.notes?.toLowerCase().includes(q) ||
+      rx._id?.toLowerCase().includes(q) ||
+      rx.medicines?.some((m) => m.name?.toLowerCase().includes(q))
     )
   })
 
-  const handleDownloadPDF = (prescriptionId) => {
-    alert(`Downloading prescription ${prescriptionId} as PDF...`)
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-blue-600">
+          <Loader2 className="w-10 h-10 animate-spin" />
+          <p className="text-lg font-medium">Loading prescriptions...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-red-500">
+          <AlertCircle className="w-10 h-10" />
+          <p className="text-lg font-medium">{error}</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
+
         {/* Header */}
         <div className="bg-gradient-to-r bg-hero-gradient text-white rounded-2xl p-6 md:p-8 shadow-lg">
           <div className="flex items-center gap-3 mb-2">
@@ -190,9 +162,7 @@ export default function PrescriptionPage() {
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold">My Prescriptions</h1>
-              <p className="text-blue-100">
-                View and manage all your medical prescriptions
-              </p>
+              <p className="text-blue-100">View and download all your medical prescriptions</p>
             </div>
           </div>
         </div>
@@ -200,17 +170,15 @@ export default function PrescriptionPage() {
         {/* Search Bar */}
         <Card className="shadow-lg border">
           <CardContent className="p-4">
-            <div className="flex flex-col gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search by doctor, diagnosis, or prescription ID..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search by doctor name, medicine, or ID..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
           </CardContent>
         </Card>
@@ -222,17 +190,21 @@ export default function PrescriptionPage() {
               <CardContent className="p-12 text-center">
                 <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  No Prescriptions Found
+                  {prescriptions.length === 0
+                    ? "No Prescriptions Yet"
+                    : "No Prescriptions Found"}
                 </h3>
                 <p className="text-gray-500">
-                  Try adjusting your search keywords
+                  {prescriptions.length === 0
+                    ? "Your doctor hasn't added any prescriptions yet."
+                    : "Try adjusting your search keywords."}
                 </p>
               </CardContent>
             </Card>
           ) : (
             filteredPrescriptions.map((prescription) => (
               <Card
-                key={prescription.id}
+                key={prescription._id}
                 className="shadow-lg border hover:shadow-xl transition-all"
               >
                 <CardContent className="p-6">
@@ -245,118 +217,121 @@ export default function PrescriptionPage() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2 mb-1">
                           <h3 className="text-lg font-bold">
-                            {prescription.doctorName}
+                            {prescription.doctorId?.name || "Unknown Doctor"}
                           </h3>
-                          {getStatusBadge(prescription.status)}
+                          {getStatusBadge(prescription)}
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {prescription.specialization}
-                        </p>
-                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
-                          <MapPin className="w-3 h-3" />
-                          {prescription.hospital}
-                        </p>
+                        <p className="text-sm text-muted-foreground">Prescribing Physician</p>
+                        {prescription.doctorId?.contact && (
+                          <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                            <Phone className="w-3 h-3" />
+                            {prescription.doctorId.contact}
+                          </p>
+                        )}
 
-                        {/* compact info chips (no valid until) */}
                         <div className="flex flex-wrap gap-2 mt-3 text-xs md:text-[0.8rem]">
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-50 border text-gray-700">
                             <Calendar className="w-3 h-3" />
                             <span className="font-medium">
-                              {prescription.date}
+                              {new Date(prescription.createdAt).toLocaleDateString("en-US", {
+                                year: "numeric", month: "short", day: "numeric",
+                              })}
                             </span>
                           </span>
-
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700">
-                            <FileText className="w-3 h-3" />
-                            <span className="font-semibold">
-                              {prescription.diagnosis}
+                          {prescription.notes && (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700">
+                              <FileText className="w-3 h-3" />
+                              <span className="font-semibold">{prescription.notes}</span>
                             </span>
-                          </span>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
                       <span className="text-xs md:text-sm font-semibold text-gray-700 bg-gray-50 border px-3 py-1 rounded-full">
-                        ID: {prescription.id}
+                        ID: {String(prescription._id).slice(-8).toUpperCase()}
                       </span>
                       <Button
-                        onClick={() => handleDownloadPDF(prescription.id)}
+                        onClick={() => handleDownloadPDF(prescription._id)}
+                        disabled={downloadingId === prescription._id}
                         variant="outline"
                         size="sm"
                         className="border-blue-600 text-blue-600 hover:bg-blue-50"
                       >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download PDF
+                        {downloadingId === prescription._id
+                          ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Downloading...</>
+                          : <><Download className="w-4 h-4 mr-2" />Download PDF</>
+                        }
                       </Button>
                     </div>
                   </div>
 
                   {/* Medicines Section */}
-                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 mb-4 border border-blue-100">
-                    <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                      <Pill className="w-4 h-4" />
-                      Prescribed Medicines
-                    </h4>
-                    <div className="space-y-3">
-                      {prescription.medicines.map((medicine, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-white rounded-lg p-4 border flex flex-col gap-3"
-                        >
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                            <div>
-                              <h5 className="font-bold text-base text-gray-800">
-                                {medicine.name}
-                              </h5>
-                              <p className="text-sm text-gray-600">
-                                {medicine.dosage}
-                              </p>
+                  {prescription.medicines?.length > 0 && (
+                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 mb-4 border border-blue-100">
+                      <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                        <Pill className="w-4 h-4" />
+                        Prescribed Medicines
+                      </h4>
+                      <div className="space-y-3">
+                        {prescription.medicines.map((medicine, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-white rounded-lg p-4 border flex flex-col gap-3"
+                          >
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                              <div>
+                                <h5 className="font-bold text-base text-gray-800">{medicine.name}</h5>
+                                <p className="text-sm text-gray-600">{medicine.dosage || "—"}</p>
+                              </div>
+                              {medicine.duration && (
+                                <span className="text-xs font-semibold px-3 py-1 bg-blue-100 text-blue-700 rounded-full self-start md:self-auto">
+                                  {medicine.duration}
+                                </span>
+                              )}
                             </div>
-                            <span className="text-xs font-semibold px-3 py-1 bg-blue-100 text-blue-700 rounded-full self-start md:self-auto">
-                              {medicine.duration}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                            <div>
-                              <p className="text-xs text-muted-foreground">
-                                Frequency
-                              </p>
-                              <p className="font-medium">
-                                {medicine.frequency}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">
-                                Timing
-                              </p>
-                              <p className="font-medium">
-                                {medicine.timing}
-                              </p>
-                            </div>
-                            <div className="col-span-2 md:col-span-1">
-                              <p className="text-xs text-muted-foreground">
-                                Instructions
-                              </p>
-                              <p className="font-medium">
-                                {medicine.instructions}
-                              </p>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-xs text-muted-foreground">Frequency</p>
+                                <p className="font-medium">{medicine.frequency || "—"}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Contact */}
-                  <div className="pt-4 border-t">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Phone className="w-4 h-4" />
-                      <span>
-                        Doctor&apos;s Contact: {prescription.contactNumber}
-                      </span>
+                  {/* Lab Tests if any */}
+                  {prescription.labTests?.length > 0 && (
+                    <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-4 mb-4">
+                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-yellow-800">
+                        <FileText className="w-4 h-4" />
+                        Lab Tests Ordered
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {prescription.labTests.map((test, idx) => (
+                          <span
+                            key={idx}
+                            className="text-xs px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full font-medium"
+                          >
+                            {test}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Doctor Contact */}
+                  {prescription.doctorId?.contact && (
+                    <div className="pt-4 border-t">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Phone className="w-4 h-4" />
+                        <span>Doctor&apos;s Contact: {prescription.doctorId.contact}</span>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))

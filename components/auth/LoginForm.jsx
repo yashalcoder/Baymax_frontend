@@ -50,6 +50,7 @@ export default function LoginForm({ role }) {
 
       const token = data.token || data.data?.token;
       const userData = data.user || data.data;
+      console.log("userData being saved:", userData); //debug line
 
       if (token) {
         localStorage.setItem("token", token);
