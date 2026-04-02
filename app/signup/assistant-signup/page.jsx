@@ -134,7 +134,7 @@ export default function AssistantSignup() {
       const res = await fetch("http://localhost:5000/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, role: "pharmacy" }),
+        body: JSON.stringify({ ...formData, role: "assistant" }),
       });
 
       const data = await res.json();
@@ -176,13 +176,16 @@ export default function AssistantSignup() {
       });
     }
   };
-  // const bgStyle = { backgroundImage: `url(${SignupImg.src})` };
+  const bgStyle = { backgroundImage: `url(${SignupImg.src})` };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden relative">
-          {/* <div className="absolute inset-0 bg-cover bg-center opacity-10" style={bgStyle}></div> */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-sky-50 flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-3xl">
+        <div
+          className="relative overflow-hidden rounded-3xl shadow-2xl border border-sky-100 bg-cover bg-center"
+          style={bgStyle}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/65 via-sky-900/30 to-white/15" />
           <div className="relative z-10">
             <div className="bg-gradient-to-r bg-hero-gradient px-8 py-6">
               <h1 className="text-3xl font-bold text-white">
@@ -193,7 +196,7 @@ export default function AssistantSignup() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-8 space-y-8">
+            <form onSubmit={handleSubmit} className="p-8 space-y-8 bg-white/85 backdrop-blur-sm">
               {/* Personal Information */}
               <section>
                 <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
@@ -263,7 +266,7 @@ export default function AssistantSignup() {
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
-                        placeholder="Minimum 8 characters"
+                        placeholder="Minimum 6 characters"
                         className="pr-10"
                       />
                       <button
@@ -280,9 +283,9 @@ export default function AssistantSignup() {
                     </div>
                     {formData.password && (
                       <div className="mt-1 space-y-1">
-                        {formData.password.length < 8 && (
+                        {formData.password.length < 6 && (
                           <p className="text-red-500 text-xs">
-                            • At least 8 characters
+                            • At least 6 characters
                           </p>
                         )}
                         {!/[a-z]/.test(formData.password) && (

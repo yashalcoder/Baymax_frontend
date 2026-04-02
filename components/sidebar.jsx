@@ -6,6 +6,9 @@ import {
   Stethoscope,
   Activity,
   Users,
+  Search,
+  UserPlus,
+  Heart,
   FileText,
   Settings,
   Pill,
@@ -77,25 +80,12 @@ const labMenu = [
   },
 ];
 const assistantMenu = [
-  { icon: Activity, label: "Dashboard", route: "/assistant" },
-
-  {
-    icon: Pill,
-    label: "Patients",
-    route: "/assistant/patients",
-  },
-
-  {
-    icon: Hospital,
-    label: "Take Vitals",
-    route: "/assistant/vitals",
-  },
-
-  {
-    icon: Settings,
-    label: "Settings",
-    route: "/assistant/settings",
-  },
+  { icon: Activity,      label: "Dashboard",        route: "/assistant" },
+    { icon: Users,         label: "My Patients",      route: "/assistant/patients" },
+    { icon: Search,        label: "Search Patient",   route: "/assistant/search" },
+    { icon: UserPlus,      label: "Add Patient",      route: "/assistant/add-patient" },
+    { icon: Heart,         label: "Take Vitals",      route: "/assistant/vitals" },
+    { icon: Settings,      label: "Settings",         route: "/assistant/settings" },
 ];
 
 

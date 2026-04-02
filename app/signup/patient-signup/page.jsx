@@ -369,6 +369,8 @@ export default function PatientSignup() {
 
       if (data.token) {
         document.cookie = `token=${data.token}; path=/;`;
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", JSON.stringify(data.user));
       }
 
       Swal.fire({
