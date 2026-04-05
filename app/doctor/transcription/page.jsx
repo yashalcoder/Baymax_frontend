@@ -247,6 +247,30 @@ const handleSendToWhisper = async () => {
   }
 
   setIsTranscribing(true);
+
+  // ✅ Most recent patient fetch karo
+  let patientId;
+  try {
+    const patientRes = await fetch(`${endpoint}/api/doctors/old-patient`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const patientData = await patientRes.json();
+
+    if (patientData.status !== "success") {
+      Swal.fire({ title: "No Patient", text: "Koi patient assign nahi hua!", icon: "warning" });
+      setIsTranscribing(false);
+      return;
+    }
+
+    patientId = patientData.data.patientId;
+    localStorage.setItem("patientId", patientId);
+
+  } catch (err) {
+    Swal.fire({ title: "Error", text: "Patient fetch nahi hua!", icon: "error" });
+    setIsTranscribing(false);
+    return;
+  }
+
   const formData = new FormData();
 
   if (uploadedFile) {
@@ -256,10 +280,10 @@ const handleSendToWhisper = async () => {
   }
 
   formData.append("language", selectedLanguage);
-  formData.append("patientId", "69a45ddb81adf47896c0cf74");
-  localStorage.setItem("patientId", "69a45ddb81adf47896c0cf74");
+  // formData.append("patientId", "69a45ddb81adf47896c0cf74");
+  // localStorage.setItem("patientId", "69a45ddb81adf47896c0cf74");
   // doctorId hatao — backend JWT se nikalega
-
+formData.append("patientId", patientId);
   try {
     const response = await fetch(`${endpoint}/api/transcribe`, {
       method: "POST",

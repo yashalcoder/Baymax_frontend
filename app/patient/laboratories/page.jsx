@@ -363,8 +363,8 @@ function LaboratoryPageInner() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         };
         const [testsRes, labsRes] = await Promise.all([
-          fetch(`${API}/api/laboratories/tests`, { headers }),
-          fetch(`${API}/api/laboratories`,        { headers }),
+          fetch(`${API}/api/laboratory/tests`, { headers }),  // FIX: was /api/laboratory/tests
+          fetch(`${API}/api/laboratory`,        { headers }),  // FIX: was /api/laboratory
         ]);
         if (testsRes.ok) setLabTests((await testsRes.json()).tests || []);
         if (labsRes.ok)  setLaboratories((await labsRes.json()).laboratories || []);
@@ -488,6 +488,22 @@ function LaboratoryPageInner() {
               >
                 <Navigation className="w-5 h-5" /> Near Me
               </button>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-4 py-2 rounded-full border-2 text-sm font-medium transition-all flex items-center gap-2 ${
+                    selectedCategory === cat.id
+                      ? "bg-hero-gradient text-white border-transparent"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-purple-400"
+                  }`}
+                >
+                  {cat.icon} {cat.name}
+                </button>
+              ))}
             </div>
           </div>
 
