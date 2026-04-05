@@ -6,13 +6,12 @@ import Swal from "sweetalert2";
 import ProtectedRoute from "@/components/protectedRoutes";
 import { Button } from "@/components/ui/button";
 import {
-  Card, CardContent, CardHeader, CardTitle, CardDescription,
+  Card, CardContent, CardHeader, CardTitle,
 } from "@/components/ui/card";
 import {
   UserPlus, Stethoscope, AlertCircle, User, Mail, Phone,
-  MapPin, Droplets, AlertTriangle, Activity,
+  MapPin, Droplets, AlertTriangle, Activity, Calendar, Users,
 } from "lucide-react";
-
 
 const inputCls =
   "w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm " +
@@ -34,22 +33,25 @@ function Field({ label, icon: Icon, children }) {
 
 const EMPTY = {
   name: "", email: "", contact: "", address: "",
+  age: "", gender: "",
+  dateOfBirth: "",
   bloodGroup: "", allergies: "", majorDisease: "", doctorId: "",
 };
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 export default function RegisterPatientPage() {
-  const router       = useRouter();
+  const router = useRouter();
   const [token, setToken] = useState(null);
-useEffect(() => {
-  setToken(localStorage.getItem("token"));
-}, []);
+
+  useEffect(() => {
+    setToken(localStorage.getItem("token"));
+  }, []);
+
   const [form,       setForm]       = useState(EMPTY);
   const [doctors,    setDoctors]    = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
-  
   useEffect(() => {
     if (!token) return;
     fetch("http://localhost:5000/api/assistants/doctors", {
@@ -72,13 +74,14 @@ useEffect(() => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const required = ["name", "email", "contact", "address", "doctorId"];
+    const required = ["name", "email", "contact", "address", "dateOfBirth", "doctorId"];
     for (const k of required) {
       if (!String(form[k] || "").trim()) {
         Swal.fire("Missing Fields", `Please fill in: ${k}`, "warning");
         return;
       }
     }
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       Swal.fire("Invalid Email", "Please enter a valid email address.", "error");
       return;
@@ -88,14 +91,20 @@ useEffect(() => {
       return;
     }
 
+    const dobDate = new Date(form.dateOfBirth);
+    if (!form.dateOfBirth || isNaN(dobDate.getTime()) || dobDate >= new Date()) {
+      Swal.fire("Invalid Date of Birth", "Please enter a valid date of birth in the past.", "error");
+      return;
+    }
+
     Swal.fire({ title: "Creating patient…", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     setSubmitting(true);
 
     try {
-      const res  = await fetch("http://localhost:5000/api/assistants/add", {
+      const res = await fetch("http://localhost:5000/api/assistants/add", {
         method:  "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify(form),
+        body:    JSON.stringify({ ...form }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to create patient");
@@ -160,6 +169,25 @@ useEffect(() => {
                 <Field label="Address *" icon={MapPin}>
                   <input className={inputCls} placeholder="Street, City" value={form.address} onChange={set("address")} />
                 </Field>
+
+                {/* Age + Gender side by side */}
+                <Field label="Date of Birth *" icon={Calendar}>
+                  <input
+                    type="date"
+                    max={new Date().toISOString().split("T")[0]}
+                    className={inputCls}
+                    value={form.dateOfBirth}
+                    onChange={set("dateOfBirth")}
+                  />
+                </Field>
+                <Field label="Gender" icon={Users}>
+                  <select className={inputCls} value={form.gender} onChange={set("gender")}>
+                    <option value="">Select…</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </Field>
               </CardContent>
             </Card>
 
@@ -170,7 +198,6 @@ useEffect(() => {
                   <Activity className="w-4 h-4 text-rose-600" /> Medical Information
                   <span className="text-xs font-normal text-gray-400">(optional)</span>
                 </CardTitle>
-                
               </CardHeader>
               <CardContent className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Blood Group" icon={Droplets}>
@@ -194,7 +221,6 @@ useEffect(() => {
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Stethoscope className="w-4 h-4 text-emerald-600" /> Assign Doctor *
                 </CardTitle>
-                
               </CardHeader>
               <CardContent className="p-5">
                 <select className={inputCls} value={form.doctorId} onChange={set("doctorId")}>
