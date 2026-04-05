@@ -312,67 +312,88 @@ export default function ManageTestsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input
-                      type="text"
-                      placeholder="Test Name (e.g. Complete Blood Count)"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Test Code (e.g. CBC-01)"
-                      value={formData.code}
-                      onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                      className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="Price (Rs.)"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <select
-                      value={formData.sampleType}
-                      onChange={(e) => setFormData({ ...formData, sampleType: e.target.value })}
-                      className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option>Blood</option>
-                      <option>Urine</option>
-                      <option>Stool</option>
-                      <option>Saliva</option>
-                    </select>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Test Name *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Complete Blood Count"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
 
-                    {/* Turnaround Time — number + unit */}
-                    <div className="flex gap-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Test Code</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. CBC-01"
+                        value={formData.code}
+                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        {categories.map((cat) => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Price (Rs.) *</label>
                       <input
                         type="number"
                         min="0"
-                        placeholder="Time (e.g. 24)"
-                        value={formData.turnaroundValue}
-                        onChange={(e) => setFormData({ ...formData, turnaroundValue: e.target.value })}
-                        className="w-1/2 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="e.g. 1500"
+                        value={formData.price}
+                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                       />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sample Type</label>
                       <select
-                        value={formData.turnaroundUnit}
-                        onChange={(e) => setFormData({ ...formData, turnaroundUnit: e.target.value })}
-                        className="w-1/2 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        value={formData.sampleType}
+                        onChange={(e) => setFormData({ ...formData, sampleType: e.target.value })}
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                       >
-                        <option>Hours</option>
-                        <option>Days</option>
-                        <option>Weeks</option>
+                        <option>Blood</option>
+                        <option>Urine</option>
+                        <option>Stool</option>
+                        <option>Saliva</option>
                       </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Turnaround Time</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="e.g. 24"
+                          value={formData.turnaroundValue}
+                          onChange={(e) => setFormData({ ...formData, turnaroundValue: e.target.value })}
+                          className="w-1/2 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                        <select
+                          value={formData.turnaroundUnit}
+                          onChange={(e) => setFormData({ ...formData, turnaroundUnit: e.target.value })}
+                          className="w-1/2 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option>Hours</option>
+                          <option>Days</option>
+                          <option>Weeks</option>
+                        </select>
+                      </div>
                     </div>
 
                   </div>

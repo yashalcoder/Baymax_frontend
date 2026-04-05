@@ -284,83 +284,105 @@ export default function ManageMedicinesPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input
-                      type="text"
-                      placeholder="Medicine Name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Brand (e.g. Panadol)"
-                      value={formData.brand}
-                      onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                      className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
 
-                    {/* Strength — number + unit */}
-                    <div className="flex gap-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Medicine Name *
+                      </label>
                       <input
-                        type="number"
-                        min="0"
-                        placeholder="Amount (e.g. 500)"
-                        value={formData.strengthValue}
-                        onChange={(e) => setFormData({ ...formData, strengthValue: e.target.value })}
-                        className="w-1/2 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        type="text"
+                        placeholder="e.g. Paracetamol"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                       />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Brand
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Panadol"
+                        value={formData.brand}
+                        onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Strength *
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="e.g. 500"
+                          value={formData.strengthValue}
+                          onChange={(e) => setFormData({ ...formData, strengthValue: e.target.value })}
+                          className="w-1/2 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                        <select
+                          value={formData.strengthUnit}
+                          onChange={(e) => setFormData({ ...formData, strengthUnit: e.target.value })}
+                          className="w-1/2 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option>mg</option>
+                          <option>ml</option>
+                          <option>g</option>
+                          <option>mcg</option>
+                          <option>IU</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Dosage Form
+                      </label>
                       <select
-                        value={formData.strengthUnit}
-                        onChange={(e) => setFormData({ ...formData, strengthUnit: e.target.value })}
-                        className="w-1/2 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        value={formData.dosageForm}
+                        onChange={(e) => setFormData({ ...formData, dosageForm: e.target.value })}
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                       >
-                        <option>mg</option>
-                        <option>ml</option>
-                        <option>g</option>
-                        <option>mcg</option>
-                        <option>IU</option>
+                        <option>Tablet</option>
+                        <option>Capsule</option>
+                        <option>Syrup</option>
+                        <option>Injection</option>
+                        <option>Ointment</option>
                       </select>
                     </div>
 
-                    <select
-                      value={formData.dosageForm}
-                      onChange={(e) => setFormData({ ...formData, dosageForm: e.target.value })}
-                      className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option>Tablet</option>
-                      <option>Capsule</option>
-                      <option>Syrup</option>
-                      <option>Injection</option>
-                      <option>Ointment</option>
-                    </select>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="Price (Rs.)"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="Stock Quantity"
-                      value={formData.quantityAvailable}
-                      onChange={(e) => setFormData({ ...formData, quantityAvailable: e.target.value })}
-                      className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-                  <div className="flex gap-3 justify-end">
-                    <Button variant="outline" onClick={resetForm}>
-                      <X className="w-4 h-4 mr-2" /> Cancel
-                    </Button>
-                    <Button
-                      className="bg-hero-gradient text-white"
-                      onClick={editingId ? handleUpdate : handleAdd}
-                    >
-                      <Save className="w-4 h-4 mr-2" />
-                      {editingId ? "Update" : "Add"} Medicine
-                    </Button>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Price (Rs.) *
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="e.g. 50"
+                        value={formData.price}
+                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Stock Quantity
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="e.g. 100"
+                        value={formData.quantityAvailable}
+                        onChange={(e) => setFormData({ ...formData, quantityAvailable: e.target.value })}
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+
                   </div>
                 </CardContent>
               </Card>
