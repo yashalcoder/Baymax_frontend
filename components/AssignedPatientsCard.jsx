@@ -143,7 +143,7 @@ export default function PatientsPage() {
     <div className="divide-y divide-border">
       {patients.map((patient) => (
         <div
-key={patient._id || patient.id}
+key={patient._id || patient.id||Math.random()}
           className="p-6 hover:bg-secondary/50 transition-colors cursor-pointer flex items-center justify-between group"
         >
           <div className="flex items-center gap-4">
