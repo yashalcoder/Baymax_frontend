@@ -94,13 +94,13 @@ function NearMeModal({ onClose, laboratories }) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-bold flex items-center gap-2">
-            <Navigation className="w-5 h-5 text-purple-600" /> Laboratories Near You
+            <Navigation className="w-5 h-5 text-blue-600" /> Laboratories Near You
           </h2>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100"><X className="w-5 h-5" /></button>
         </div>
         <div className="relative" style={{ height: 460 }}>
           {status === "locating" && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-purple-600 bg-white z-10">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-blue-600 bg-white z-10">
               <Loader2 className="w-10 h-10 animate-spin" />
               <p className="font-medium">Detecting your location…</p>
             </div>
@@ -131,13 +131,13 @@ function TestRow({ testName, labTests, lab }) {
 
   return (
     <div className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm ${
-      offered ? "bg-purple-50 border border-purple-200" : "bg-red-50 border border-red-200"
+      offered ? "bg-blue-50 border border-blue-200" : "bg-red-50 border border-red-200"
     }`}>
       <div className="flex items-center gap-2">
         {offered
-          ? <CheckCircle className="w-4 h-4 text-purple-600 shrink-0" />
+          ? <CheckCircle className="w-4 h-4 text-blue-600 shrink-0" />
           : <XCircle className="w-4 h-4 text-red-500 shrink-0" />}
-        <span className={`font-medium ${offered ? "text-purple-800" : "text-red-700"}`}>
+        <span className={`font-medium ${offered ? "text-blue-800" : "text-red-700"}`}>
           {testName}
         </span>
       </div>
@@ -146,7 +146,7 @@ function TestRow({ testName, labTests, lab }) {
             {(lab.discount || 0) > 0 && (
               <span className="text-xs text-red-400 line-through">Rs. {price}</span>
             )}
-            <span className="font-bold text-purple-700">
+            <span className="font-bold text-blue-700">
               Rs. {getFinalPrice(price, lab.discount)}
             </span>
             {(lab.discount || 0) > 0 && (
@@ -175,12 +175,12 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
   return (
     <div className={`bg-white rounded-xl shadow-md border-2 transition-all hover:shadow-lg ${
       rank === 0 && hasPrescription
-        ? "border-purple-500 ring-4 ring-purple-100"
-        : "border-gray-200 hover:border-purple-300"
+        ? "border-blue-500 ring-4 ring-blue-100"
+        : "border-gray-200 hover:border-blue-300"
     }`}>
       {rank === 0 && hasPrescription && (
         <div className="px-5 pt-4">
-          <span className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 bg-purple-100 text-purple-700 rounded-full">
+          <span className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
             <CheckCircle className="w-3 h-3" /> Best Match — Most Tests Available
           </span>
         </div>
@@ -190,8 +190,8 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="p-2 bg-purple-100 rounded-lg shrink-0">
-              <Beaker className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-blue-100 rounded-lg shrink-0">
+              <Beaker className="w-5 h-5 text-blue-600" />
             </div>
             <div className="min-w-0">
               <h3 className="font-bold text-gray-900 text-lg leading-tight">{lab.labName}</h3>
@@ -204,7 +204,7 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
             </div>
           </div>
           <div className="flex flex-col items-end gap-1.5 shrink-0">
-            {dist && <span className="text-xs font-bold text-purple-600">📍 {dist}</span>}
+            {dist && <span className="text-xs font-bold text-blue-600">📍 {dist}</span>}
             {lab.rating && (
               <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold">
                 <Star className="w-3 h-3 inline mr-0.5" />{lab.rating}
@@ -221,7 +221,7 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
             </span>
           )}
           {lab.reportTime && (
-            <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold">
+            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
               <Clock className="w-3 h-3 inline mr-1" />{lab.reportTime}
             </span>
           )}
@@ -236,7 +236,7 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
         {hasPrescription && (
           <div className={`mb-3 px-4 py-2.5 rounded-lg border flex items-center justify-between ${
             availableCount === totalCount
-              ? "bg-purple-50 border-purple-200"
+              ? "bg-blue-50 border-blue-200"
               : availableCount > 0
               ? "bg-yellow-50 border-yellow-200"
               : "bg-red-50 border-red-200"
@@ -244,7 +244,7 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
             <span className="text-sm font-semibold text-gray-700">Prescription Coverage</span>
             <span className={`text-sm font-bold ${
               availableCount === totalCount
-                ? "text-purple-700"
+                ? "text-blue-700"
                 : availableCount > 0
                 ? "text-yellow-700"
                 : "text-red-600"
@@ -259,7 +259,7 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
           <>
             <button
               onClick={() => setExpanded(!expanded)}
-              className="w-full flex items-center justify-between text-sm font-medium text-gray-600 hover:text-purple-700 transition-colors py-1 mb-2"
+              className="w-full flex items-center justify-between text-sm font-medium text-gray-600 hover:text-blue-700 transition-colors py-1 mb-2"
             >
               <span>Test Availability & Prices</span>
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -289,7 +289,7 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
               href={`https://www.google.com/maps/dir/?api=1&destination=${lab.location.lat},${lab.location.lng}`}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm text-center flex items-center justify-center gap-1 transition-colors"
+              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm text-center flex items-center justify-center gap-1 transition-colors"
             >
               <Navigation className="w-3.5 h-3.5" /> Directions
             </a>
@@ -400,7 +400,7 @@ function LaboratoryPageInner() {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3 text-purple-600">
+      <div className="flex flex-col items-center gap-3 text-blue-600">
         <Loader2 className="w-10 h-10 animate-spin" />
         <p className="text-lg font-medium">Loading laboratory data…</p>
       </div>
@@ -422,7 +422,7 @@ function LaboratoryPageInner() {
         <NearMeModal onClose={() => setShowNearMe(false)} laboratories={laboratories} />
       )}
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 p-6">
         <div className="max-w-7xl mx-auto">
 
           <div className="mb-8">
@@ -432,7 +432,7 @@ function LaboratoryPageInner() {
 
           {/* Prescription banner */}
           {prescribedTestNames.length > 0 && (
-            <div className="mb-6 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl p-5 shadow-lg">
+            <div className="mb-6 bg-gradient-to-r from-blue-600 to-blue-600 text-white rounded-2xl p-5 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <Beaker className="w-5 h-5" />
@@ -445,7 +445,7 @@ function LaboratoryPageInner() {
                   const cfg = TEST_TYPE_CONFIG[type];
                   return (
                     <div key={type}>
-                      <p className="text-xs font-bold uppercase tracking-wider text-purple-200 mb-1.5">
+                      <p className="text-xs font-bold uppercase tracking-wider text-blue-200 mb-1.5">
                         {cfg.emoji} {cfg.label}
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -463,7 +463,7 @@ function LaboratoryPageInner() {
                 })}
               </div>
 
-              <p className="text-purple-100 text-xs mt-4">
+              <p className="text-blue-100 text-xs mt-4">
                 Labs are sorted by how many of your prescribed tests they offer.
               </p>
             </div>
@@ -479,12 +479,12 @@ function LaboratoryPageInner() {
                   placeholder="Search by lab name or address…"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 text-base"
+                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-base"
                 />
               </div>
               <button
                 onClick={() => setShowNearMe(true)}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-2 font-semibold shadow-md"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-600 text-white rounded-lg hover:from-blue-700 hover:to-blue-700 transition-all flex items-center gap-2 font-semibold shadow-md"
               >
                 <Navigation className="w-5 h-5" /> Near Me
               </button>
@@ -494,7 +494,7 @@ function LaboratoryPageInner() {
           {/* Lab cards */}
           {filteredLabs.length === 0 ? (
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-16 text-center">
-              <Beaker className="w-20 h-20 text-purple-200 mx-auto mb-4" />
+              <Beaker className="w-20 h-20 text-blue-200 mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-gray-700 mb-2">
                 {laboratories.length === 0 ? "No Laboratories Yet" : "No Results Found"}
               </h3>
@@ -505,7 +505,7 @@ function LaboratoryPageInner() {
               </p>
               <button
                 onClick={() => setShowNearMe(true)}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold inline-flex items-center gap-2 shadow-md"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-600 text-white rounded-xl font-semibold inline-flex items-center gap-2 shadow-md"
               >
                 <Navigation className="w-5 h-5" /> Find Nearby Labs on Map
               </button>
@@ -534,7 +534,7 @@ export default function LaboratoryPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-purple-600" />
+        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
       </div>
     }>
       <LaboratoryPageInner />
