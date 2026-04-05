@@ -119,14 +119,41 @@ export default function DoctorProfileSettings() {
         const result = await response.json();
         console.log("Doctor Profile:", result);
 
-        if (result.status === "success") {
-          const doc = result.data;
-          console.log("Doctor Data:", doc);
-          setDoctorData((prevData) => ({
-            ...prevData, // keep existing dummy/default values
-            ...result.data, // overwrite with backend values where available
-          }));
-        }
+if (result.status === "success") {
+  const { user, profile } = result.data;
+  
+  setDoctorData((prevData) => ({
+    ...prevData,
+    // User se
+    email: user.email || "",
+    phone: user.contact || "",
+    address: user.address || "",
+    // Profile se - direct
+    firstName: profile.firstName || "",
+    lastName: profile.lastName || "",
+    gender: profile.gender || "",
+    dateOfBirth: profile.dateOfBirth || "",
+    bio: profile.bio || "",
+    languages: profile.languages?.filter(l => l !== "") || [],
+    // Profile se - nested
+    city: profile.address?.city || "",
+    state: profile.address?.state || "",
+    country: profile.address?.country || "",
+    availableFrom: profile.availability?.[0]?.from || "",
+availableTo: profile.availability?.[0]?.to || "",
+workingDays: profile.availability?.map(a => a.day) || [],
+    specialization: profile.professional?.specialization || "",
+    subSpecialization: profile.professional?.subSpecialization || "",
+    experience: profile.professional?.experience || "",
+    currentHospital: profile.professional?.currentHospital || "",
+    consultationFee: profile.professional?.consultationFee || "",
+    university: profile.medicalQualifications?.university || "",
+    graduationYear: profile.medicalQualifications?.graduationYear || "",
+    licenseNumber: profile.medicalQualifications?.licenseNumber || "",
+    licenseState: profile.medicalQualifications?.licenseState || "",
+    licenseExpiry: profile.medicalQualifications?.licenseExpiry || "",
+  }));
+}
       } catch (error) {
         console.log("Error fetching doctor:", error);
       }
@@ -134,7 +161,7 @@ export default function DoctorProfileSettings() {
 
     fetchDoctorProfile();
   }, []);
-
+console.log("Doctor Data State:", doctorData); // Debugging log
   const handleInputChange = (field, value) => {
     setDoctorData((prev) => ({ ...prev, [field]: value }));
   };
@@ -203,7 +230,7 @@ export default function DoctorProfileSettings() {
         </div>
         <div>
           <h3 className="text-3xl font-bold text-gray-900">
-            {doctorData.title} {doctorData.firstName} {doctorData.lastName}
+            {doctorData.title} {doctorData.fullName} 
           </h3>
           <p className="text-lg text-gray-600 mt-1">
             {doctorData.specialization}

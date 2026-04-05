@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
 
-export default function PrescriptionForm({ onGenerate }) {
+
+import { useEffect, useMemo, useState } from "react";
+
+export default function PrescriptionForm({ onGenerate, initialData,patientInfo,editMode }) {
   const [patientName, setPatientName] = useState("");
   const [symptoms, setSymptoms] = useState("");
   const [medicines, setMedicines] = useState("");
@@ -10,6 +12,39 @@ export default function PrescriptionForm({ onGenerate }) {
   const [duration, setDuration] = useState("");
   const [allergies, setAllergies] = useState("");
 
+  // ✅ Jab initialData aaye, fields populate karo
+  useEffect(() => {
+    if (initialData) {
+      setSymptoms(initialData.diagnosis || "");
+      setAllergies(initialData.patientInfo?.allergies || "");
+      
+      // Medicines array ko string mein convert karo
+      if (initialData.prescription?.length > 0) {
+        const medNames = initialData.prescription
+          .map((m) => `${m.medicine} ${m.dosage}`)
+          .join("\n");
+        setMedicines(medNames);
+
+        const dosageInstructions = initialData.prescription
+          .map((m) => `${m.medicine}: ${m.duration}`)
+          .join("\n");
+        setDosage(dosageInstructions);
+        const durationText = initialData.prescription
+          .map((m) => `${m.medicine}: ${m.duration}`)
+          .join("\n");
+        setDuration(durationText);
+      }
+      console.log("Patient info received in PrescriptionForm:", patientInfo);
+      if (patientInfo) {
+      setPatientName(patientInfo.name || "");
+      setAllergies(patientInfo.allergies || "");
+    }
+    }
+  }, [initialData]); // ✅ initialData change hone pe run karo
+
+useEffect(() => {
+  console.log("Updated medicines:", medicines);
+}, [medicines]);
   const allergyKeywords = [
     "penicillin",
     "amoxicillin",
@@ -85,6 +120,36 @@ export default function PrescriptionForm({ onGenerate }) {
     setAllergies("Penicillin");
   }
 
+  const handleEditPrescription = async () => {  // ✅ async missing tha
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/prescription/${localStorage.getItem("consultationId")}`,
+      {                                        // ✅ fetch ke andar options object
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json", // ✅ JSON bhej rahe hain to ye chahiye
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({                 // ✅ body string honi chahiye
+          medicines,
+          dosage,
+          duration,
+          symptoms,
+        }),
+      }
+    );
+
+    if (!response.ok) throw new Error("Failed to update");
+
+    const result = await response.json();
+    console.log("Updated:", result);
+
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+      
+  
   function handleSubmit(e) {
     e.preventDefault();
     const payload = {
@@ -99,6 +164,7 @@ export default function PrescriptionForm({ onGenerate }) {
     };
     onGenerate(payload);
   }
+  console.log("editMode in form:", editMode);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -167,6 +233,7 @@ export default function PrescriptionForm({ onGenerate }) {
             id="medicines"
             name="medicines"
             rows={6}
+            disabled={!editMode}
             value={medicines}
             onChange={(e) => setMedicines(e.target.value)}
             placeholder={
@@ -187,6 +254,7 @@ export default function PrescriptionForm({ onGenerate }) {
               id="dosage"
               name="dosage"
               rows={3}
+              disabled={!editMode}
               value={dosage}
               onChange={(e) => setDosage(e.target.value)}
               placeholder={
@@ -204,6 +272,7 @@ export default function PrescriptionForm({ onGenerate }) {
             </label>
             <input
               id="duration"
+              disabled={!editMode}
               name="duration"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
@@ -246,23 +315,15 @@ export default function PrescriptionForm({ onGenerate }) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={handleAutofill}
-          className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          {/* Wand icon */}
-          <svg
-            viewBox="0 0 24 24"
-            className="h-4 w-4"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path d="M6 2h2v3H6V2zm10 0h2v3h-2V2zM3 8h3v2H3V8zm15 0h3v2h-3V8zM6 19h2v3H6v-3zm10 0h2v3h-2v-3zM8 10h8v4H8v-4z" />
-          </svg>
-          Auto-fill Example
-        </button>
-
+    {editMode && (
+  <button
+    type="button"
+    onClick={handleEditPrescription}
+    className="inline-flex hover:bg-purpule-900 hver:cursor-pointer items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-accent/50"
+  >
+    Save Changes
+  </button>
+)}
         <button
           type="submit"
           className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"

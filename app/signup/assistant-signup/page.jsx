@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { User, Mail, Phone, MapPin, AlertTriangle, Lock } from "lucide-react";
+import { User, Mail, Phone, MapPin, AlertTriangle, Lock, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Swal from "sweetalert2";
 import SignupImg from "@/public/signup.avif";
@@ -30,6 +30,7 @@ export default function AssistantSignup() {
     address: "",
     contact: "",
     degree: "",
+    dateOfBirth: "",
   });
 
   const roleRedirectMap = {
@@ -41,7 +42,7 @@ export default function AssistantSignup() {
   };
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
- 
+
   const validatePhone = (phone) => {
     const phoneRegex = /^03[0-9]{2}-[0-9]{7}$/;
     return phoneRegex.test(phone);
@@ -50,13 +51,10 @@ export default function AssistantSignup() {
   const handlePhoneChange = (e) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 11) value = value.slice(0, 11);
-
-    if (value.length > 4) {
-      value = value.slice(0, 4) + "-" + value.slice(4);
-    }
-
+    if (value.length > 4) value = value.slice(0, 4) + "-" + value.slice(4);
     setFormData({ ...formData, contact: value });
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -65,7 +63,6 @@ export default function AssistantSignup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Required fields check
     if (
       !formData.name ||
       !formData.email ||
@@ -73,7 +70,8 @@ export default function AssistantSignup() {
       !formData.address ||
       !formData.password ||
       !formData.confirmPassword ||
-      !formData.degree
+      !formData.degree ||
+      !formData.dateOfBirth
     ) {
       Swal.fire({
         icon: "error",
@@ -83,7 +81,17 @@ export default function AssistantSignup() {
       return;
     }
 
-    // Email validation
+    // DOB validation — must be a valid past date
+    const dobDate = new Date(formData.dateOfBirth);
+    if (isNaN(dobDate.getTime()) || dobDate >= new Date()) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Date of Birth",
+        text: "Please enter a valid date of birth in the past.",
+      });
+      return;
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       Swal.fire({
@@ -94,7 +102,6 @@ export default function AssistantSignup() {
       return;
     }
 
-    // Phone validation
     if (!validatePhone(formData.contact)) {
       Swal.fire({
         icon: "error",
@@ -104,7 +111,6 @@ export default function AssistantSignup() {
       return;
     }
 
-    // Password validations
     if (formData.password !== formData.confirmPassword) {
       Swal.fire({
         icon: "error",
@@ -134,7 +140,7 @@ export default function AssistantSignup() {
       const res = await fetch("http://localhost:5000/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, role: "pharmacy" }),
+        body: JSON.stringify({ ...formData, role: "assistant" }),
       });
 
       const data = await res.json();
@@ -176,13 +182,17 @@ export default function AssistantSignup() {
       });
     }
   };
-  // const bgStyle = { backgroundImage: `url(${SignupImg.src})` };
+
+  const bgStyle = { backgroundImage: `url(${SignupImg.src})` };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden relative">
-          {/* <div className="absolute inset-0 bg-cover bg-center opacity-10" style={bgStyle}></div> */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-sky-50 flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-3xl">
+        <div
+          className="relative overflow-hidden rounded-3xl shadow-2xl border border-sky-100 bg-cover bg-center"
+          style={bgStyle}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/65 via-sky-900/30 to-white/15" />
           <div className="relative z-10">
             <div className="bg-gradient-to-r bg-hero-gradient px-8 py-6">
               <h1 className="text-3xl font-bold text-white">
@@ -193,7 +203,7 @@ export default function AssistantSignup() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-8 space-y-8">
+            <form onSubmit={handleSubmit} className="p-8 space-y-8 bg-white/85 backdrop-blur-sm">
               {/* Personal Information */}
               <section>
                 <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
@@ -252,7 +262,23 @@ export default function AssistantSignup() {
                       required
                     />
                   </div>
-                 <div>
+
+                  {/* DOB field */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <Calendar className="mr-2 text-gray-500" size={16} />
+                      Date of Birth *
+                    </label>
+                    <Input
+                      name="dateOfBirth"
+                      type="date"
+                      max={new Date().toISOString().split("T")[0]}
+                      value={formData.dateOfBirth}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                       <Lock className="mr-2 text-gray-500" size={16} />
                       Password *
@@ -263,7 +289,7 @@ export default function AssistantSignup() {
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
-                        placeholder="Minimum 8 characters"
+                        placeholder="Minimum 6 characters"
                         className="pr-10"
                       />
                       <button
@@ -271,41 +297,25 @@ export default function AssistantSignup() {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                       >
-                        {showPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
                     {formData.password && (
                       <div className="mt-1 space-y-1">
-                        {formData.password.length < 8 && (
-                          <p className="text-red-500 text-xs">
-                            • At least 8 characters
-                          </p>
+                        {formData.password.length < 6 && (
+                          <p className="text-red-500 text-xs">• At least 6 characters</p>
                         )}
                         {!/[a-z]/.test(formData.password) && (
-                          <p className="text-red-500 text-xs">
-                            • At least 1 lowercase letter
-                          </p>
+                          <p className="text-red-500 text-xs">• At least 1 lowercase letter</p>
                         )}
                         {!/[A-Z]/.test(formData.password) && (
-                          <p className="text-red-500 text-xs">
-                            • At least 1 uppercase letter
-                          </p>
+                          <p className="text-red-500 text-xs">• At least 1 uppercase letter</p>
                         )}
                         {!/[0-9]/.test(formData.password) && (
-                          <p className="text-red-500 text-xs">
-                            • At least 1 number
-                          </p>
+                          <p className="text-red-500 text-xs">• At least 1 number</p>
                         )}
-                        {!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(
-                          formData.password
-                        ) && (
-                          <p className="text-red-500 text-xs">
-                            • At least 1 special character
-                          </p>
+                        {!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password) && (
+                          <p className="text-red-500 text-xs">• At least 1 special character</p>
                         )}
                       </div>
                     )}
@@ -326,23 +336,15 @@ export default function AssistantSignup() {
                       />
                       <button
                         type="button"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                       >
-                        {showConfirmPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
+                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
                     {formData.confirmPassword &&
                       formData.confirmPassword !== formData.password && (
-                        <p className="text-red-500 text-xs mt-1">
-                          Passwords do not match
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">Passwords do not match</p>
                       )}
                   </div>
                 </div>

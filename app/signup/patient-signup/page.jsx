@@ -10,6 +10,7 @@ import {
   Lock,
   CreditCard,
   Users,
+  Calendar,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
@@ -138,6 +139,7 @@ export default function PatientSignup() {
     contact: "",
     cnic: "",
     gender: "",
+    dateOfBirth: "",
     address: "",
     password: "",
     confirmPassword: "",
@@ -153,7 +155,6 @@ export default function PatientSignup() {
   const [allergySearch, setAllergySearch] = useState("");
   const [showAllergyDropdown, setShowAllergyDropdown] = useState(false);
 
-  // Add state for password visibility (add this tocomponent state)
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -185,25 +186,15 @@ export default function PatientSignup() {
   const handleCNICChange = (e) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 13) value = value.slice(0, 13);
-
-    if (value.length > 5) {
-      value = value.slice(0, 5) + "-" + value.slice(5);
-    }
-    if (value.length > 13) {
-      value = value.slice(0, 13) + "-" + value.slice(13);
-    }
-
+    if (value.length > 5) value = value.slice(0, 5) + "-" + value.slice(5);
+    if (value.length > 13) value = value.slice(0, 13) + "-" + value.slice(13);
     setFormData({ ...formData, cnic: value });
   };
 
   const handlePhoneChange = (e) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 11) value = value.slice(0, 11);
-
-    if (value.length > 4) {
-      value = value.slice(0, 4) + "-" + value.slice(4);
-    }
-
+    if (value.length > 4) value = value.slice(0, 4) + "-" + value.slice(4);
     setFormData({ ...formData, contact: value });
   };
 
@@ -211,12 +202,9 @@ export default function PatientSignup() {
     const value = e.target.value;
     setDiseaseSearch(value);
     setShowDiseaseDropdown(value.length > 0);
-
-    // Check if value matches a main disease category
     const matchedCategory = Object.keys(diseaseOptions).find(
       (key) => key.toLowerCase() === value.toLowerCase()
     );
-
     if (matchedCategory) {
       setDiseaseSubTypes(diseaseOptions[matchedCategory]);
     } else {
@@ -227,8 +215,6 @@ export default function PatientSignup() {
   const selectDisease = (disease) => {
     setDiseaseSearch(disease);
     setFormData({ ...formData, majorDisease: disease });
-
-    // Check if this disease has subtypes
     if (diseaseOptions[disease]) {
       setDiseaseSubTypes(diseaseOptions[disease]);
       setShowDiseaseDropdown(true);
@@ -263,7 +249,6 @@ export default function PatientSignup() {
         disease.toLowerCase().includes(diseaseSearch.toLowerCase())
       );
     }
-
     return Object.keys(diseaseOptions).filter((disease) =>
       disease.toLowerCase().includes(diseaseSearch.toLowerCase())
     );
@@ -282,6 +267,7 @@ export default function PatientSignup() {
       !formData.contact ||
       !formData.cnic ||
       !formData.gender ||
+      !formData.dateOfBirth ||
       !formData.address ||
       !formData.password ||
       !formData.confirmPassword
@@ -293,7 +279,19 @@ export default function PatientSignup() {
       });
       return;
     }
-    // Email validation
+
+    // DOB validation
+    const dobDate = new Date(formData.dateOfBirth);
+    const today = new Date();
+    if (!formData.dateOfBirth || isNaN(dobDate.getTime()) || dobDate >= today) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Date of Birth",
+        text: "Please enter a valid date of birth in the past.",
+      });
+      return;
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       Swal.fire({
@@ -369,6 +367,8 @@ export default function PatientSignup() {
 
       if (data.token) {
         document.cookie = `token=${data.token}; path=/;`;
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
       }
 
       Swal.fire({
@@ -394,13 +394,10 @@ export default function PatientSignup() {
     }
   };
 
-  //const bgStyle = { backgroundImage: `url(${SignupImg.src})` };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden relative">
-          {/* <div className="absolute inset-0 bg-cover bg-center opacity-10" style={bgStyle}></div> */}
           <div className="relative z-10">
             <div className="bg-gradient-to-r bg-hero-gradient px-8 py-6">
               <h1 className="text-3xl font-bold text-white">
@@ -467,6 +464,8 @@ export default function PatientSignup() {
                       placeholder="XXXXX-XXXXXXX-X"
                     />
                   </div>
+
+                  {/* Gender + Age side by side */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                       <Users className="mr-2 text-gray-500" size={16} />
@@ -486,6 +485,20 @@ export default function PatientSignup() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <Calendar className="mr-2 text-gray-500" size={16} />
+                      Date of Birth *
+                    </label>
+                    <Input
+                      name="dateOfBirth"
+                      type="date"
+                      max={new Date().toISOString().split("T")[0]}
+                      value={formData.dateOfBirth}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                       <MapPin className="mr-2 text-gray-500" size={16} />
                       Address *
                     </label>
@@ -496,7 +509,7 @@ export default function PatientSignup() {
                       placeholder="Enter address"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                       <Lock className="mr-2 text-gray-500" size={16} />
@@ -516,41 +529,25 @@ export default function PatientSignup() {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                       >
-                        {showPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
                     {formData.password && (
                       <div className="mt-1 space-y-1">
                         {formData.password.length < 8 && (
-                          <p className="text-red-500 text-xs">
-                            • At least 8 characters
-                          </p>
+                          <p className="text-red-500 text-xs">• At least 8 characters</p>
                         )}
                         {!/[a-z]/.test(formData.password) && (
-                          <p className="text-red-500 text-xs">
-                            • At least 1 lowercase letter
-                          </p>
+                          <p className="text-red-500 text-xs">• At least 1 lowercase letter</p>
                         )}
                         {!/[A-Z]/.test(formData.password) && (
-                          <p className="text-red-500 text-xs">
-                            • At least 1 uppercase letter
-                          </p>
+                          <p className="text-red-500 text-xs">• At least 1 uppercase letter</p>
                         )}
                         {!/[0-9]/.test(formData.password) && (
-                          <p className="text-red-500 text-xs">
-                            • At least 1 number
-                          </p>
+                          <p className="text-red-500 text-xs">• At least 1 number</p>
                         )}
-                        {!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(
-                          formData.password
-                        ) && (
-                          <p className="text-red-500 text-xs">
-                            • At least 1 special character
-                          </p>
+                        {!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password) && (
+                          <p className="text-red-500 text-xs">• At least 1 special character</p>
                         )}
                       </div>
                     )}
@@ -571,23 +568,15 @@ export default function PatientSignup() {
                       />
                       <button
                         type="button"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                       >
-                        {showConfirmPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
+                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
                     {formData.confirmPassword &&
                       formData.confirmPassword !== formData.password && (
-                        <p className="text-red-500 text-xs mt-1">
-                          Passwords do not match
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">Passwords do not match</p>
                       )}
                   </div>
                 </div>
@@ -608,25 +597,22 @@ export default function PatientSignup() {
                     <Input
                       value={allergySearch}
                       onChange={handleAllergySearch}
-                      onFocus={() =>
-                        setShowAllergyDropdown(allergySearch.length > 0)
-                      }
+                      onFocus={() => setShowAllergyDropdown(allergySearch.length > 0)}
                       placeholder="Search allergies"
                     />
-                    {showAllergyDropdown &&
-                      getFilteredAllergies().length > 0 && (
-                        <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                          {getFilteredAllergies().map((allergy, idx) => (
-                            <div
-                              key={idx}
-                              onClick={() => selectAllergy(allergy)}
-                              className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm"
-                            >
-                              {allergy}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                    {showAllergyDropdown && getFilteredAllergies().length > 0 && (
+                      <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        {getFilteredAllergies().map((allergy, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => selectAllergy(allergy)}
+                            className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                          >
+                            {allergy}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -641,9 +627,7 @@ export default function PatientSignup() {
                     >
                       <option value="">Select Blood Group</option>
                       {bloodGroups.map((group) => (
-                        <option key={group} value={group}>
-                          {group}
-                        </option>
+                        <option key={group} value={group}>{group}</option>
                       ))}
                     </select>
                   </div>
@@ -655,32 +639,29 @@ export default function PatientSignup() {
                     <Input
                       value={diseaseSearch}
                       onChange={handleDiseaseSearch}
-                      onFocus={() =>
-                        setShowDiseaseDropdown(diseaseSearch.length > 0)
-                      }
+                      onFocus={() => setShowDiseaseDropdown(diseaseSearch.length > 0)}
                       placeholder="Search disease"
                     />
-                    {showDiseaseDropdown &&
-                      getFilteredDiseases().length > 0 && (
-                        <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                          {getFilteredDiseases().map((disease, idx) => (
-                            <div
-                              key={idx}
-                              onClick={() =>
-                                diseaseSubTypes.length > 0
-                                  ? selectDiseaseSubType(disease)
-                                  : selectDisease(disease)
-                              }
-                              className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm"
-                            >
-                              {disease}
-                              {diseaseOptions[disease] && (
-                                <span className="text-gray-400 ml-2">→</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                    {showDiseaseDropdown && getFilteredDiseases().length > 0 && (
+                      <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        {getFilteredDiseases().map((disease, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() =>
+                              diseaseSubTypes.length > 0
+                                ? selectDiseaseSubType(disease)
+                                : selectDisease(disease)
+                            }
+                            className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                          >
+                            {disease}
+                            {diseaseOptions[disease] && (
+                              <span className="text-gray-400 ml-2">→</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </section>
