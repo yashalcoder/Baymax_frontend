@@ -558,7 +558,7 @@ export default function MedicalHistoryPage() {
         <div className="max-w-4xl mx-auto space-y-6">
 
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-600 text-white rounded-2xl p-6 shadow-lg">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-white/20 rounded-lg">

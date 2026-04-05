@@ -359,7 +359,7 @@ export default function AssistantSettingsPage() {
         <div className="max-w-4xl mx-auto space-y-6">
 
           {/* Page header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-6 shadow-lg flex items-center gap-3">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-600 text-white rounded-2xl p-6 shadow-lg flex items-center gap-3">
             <div className="p-3 bg-white/20 rounded-xl">
               <Settings className="w-7 h-7" />
             </div>
