@@ -225,8 +225,8 @@ export default function LaboratoryPage() {
         };
 
         const [testsRes, labsRes] = await Promise.all([
-          fetch(`${API}/api/laboratories/tests`, { headers }),  // FIX: was /api/laboratory/tests
-          fetch(`${API}/api/laboratories`,        { headers }),  // FIX: was /api/laboratory
+          fetch(`${API}/api/laboratory/tests`, { headers }),  // FIX: was /api/laboratory/tests
+          fetch(`${API}/api/laboratory`,        { headers }),  // FIX: was /api/laboratory
         ]);
 
         if (testsRes.ok) setLabTests((await testsRes.json()).tests || []);
@@ -300,7 +300,7 @@ export default function LaboratoryPage() {
         />
       )}
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 p-6">
+      <div className="min-h-screen bg-hero-gra p-6">
         <div className="max-w-7xl mx-auto">
 
           <div className="mb-8">
@@ -323,7 +323,7 @@ export default function LaboratoryPage() {
               </div>
               <button
                 onClick={() => setShowNearMe(true)}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-2 font-semibold shadow-md"
+                className="px-6 py-3 bg-hero-gradient text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-2 font-semibold shadow-md"
               >
                 <Navigation className="w-5 h-5" />
                 Near Me
@@ -337,7 +337,7 @@ export default function LaboratoryPage() {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`px-4 py-2 rounded-full border-2 text-sm font-medium transition-all flex items-center gap-2 ${
                     selectedCategory === cat.id
-                      ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white border-transparent"
+                      ? "bg-hero-gradient text-white border-transparent"
                       : "bg-white text-gray-700 border-gray-300 hover:border-purple-400"
                   }`}
                 >

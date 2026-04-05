@@ -18,6 +18,7 @@ import {
   Plus,
   ChevronRight,
 } from "lucide-react";
+import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { use } from "react";
 import Patients from "@/components/patients";
@@ -58,7 +59,7 @@ useEffect(() => {
 
       // ✅ Handle both cases (array OR object)
       setCount(Array.isArray(patients) ? patients.length : patients.count || 0);
-
+    
       // 📋 Consultations
       const response2 = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/getConsultations`,
@@ -116,7 +117,35 @@ useEffect(() => {
     },
   ];
 
+const handleDischarge = async (patientId) => {
+  const confirm = await Swal.fire({
+    title: "Patient Discharge?",
+    text: "Kya aap sure hain? Patient remove ho jayega.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Haan, Discharge karo",
+    cancelButtonText: "Nahi"
+  });
 
+
+const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/discharge/${patientId}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    
+    const data = await res.json();
+    console.log("Discharge response:", data);
+    if (data.status === "success") {
+      Swal.fire({ title: "Done!", text: "Patient discharge ho gaya", icon: "success" });
+      // List refresh karo
+      fetchPatients(); 
+    }
+  } catch (err) {
+    Swal.fire({ title: "Error", text: "Discharge nahi hua!", icon: "error" });
+  }
+};
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
       {/* Main Content */}
@@ -140,6 +169,22 @@ useEffect(() => {
                 <span className="font-poppins"> patients today</span>
               </p>
             </div>
+            <Button
+              className="bg-hero-gradient text-white shadow-medical-lg hover:opacity-90 transition-opacity"
+             onClick={() => {
+  const patientId = localStorage.getItem("patientId");
+  console.log("Patient ID:", patientId);
+  if (!patientId || patientId === "undefined") {
+    Swal.fire({ title: "Error", text: "Koi patient selected nahi!", icon: "warning" });
+    return;
+  }
+  handleDischarge(patientId);
+  router.push("/doctor");
+}}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Discharge Patient
+            </Button>
             <Button
               className="bg-hero-gradient text-white shadow-medical-lg hover:opacity-90 transition-opacity"
               onClick={() => router.push("/doctor/transcription")}

@@ -121,7 +121,44 @@ export default function SearchPatientsPage() {
 
   // Modal state
   const [assignTarget, setAssignTarget] = useState(null); // patient object or null
+const fetchInitialPatients = async (tkn = token) => {
+  if (!tkn) return;
 
+  try {
+    setLoading(true);
+    const res = await fetch(
+      `http://localhost:5000/api/patient/getPatients?limit=10`,
+      {
+        headers: { Authorization: `Bearer ${tkn}` },
+      }
+    );
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+
+    setResults(Array.isArray(data?.patients) ? data.patients : []);
+  } catch (err) {
+    console.error("Initial fetch error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+useEffect(() => {
+  const t = localStorage.getItem("token");
+  setToken(t);
+  if (!t) return;
+
+  // ✅ ADD THIS LINE
+  fetchInitialPatients(t);
+
+  // existing doctor fetch (keep same)
+  fetch("http://localhost:5000/api/assistants/doctors", {
+    headers: { Authorization: `Bearer ${t}` },
+  })
+    .then((r) => r.json())
+    .then((d) => setDoctors(Array.isArray(d?.data) ? d.data : []))
+    .catch(() => setDoctors([]));
+}, []);
   useEffect(() => {
     const t = localStorage.getItem("token");
     setToken(t);
@@ -240,7 +277,7 @@ export default function SearchPatientsPage() {
                 </div>
               )}
 
-              {!loading && !searched && (
+              {!loading && !searched && results.length===0 && (
                 <div className="py-10 text-center">
                   <Search className="w-10 h-10 text-gray-200 mx-auto mb-2" />
                   <p className="text-sm text-gray-400">Enter a search query above to find patients</p>
