@@ -58,8 +58,8 @@ function VitalsForm({ patientId, patientName, onRecorded }) {
           <span className="text-rose-700">{patientName}</span>
         </CardTitle>
         <CardDescription>
-          FR-2.2 — Enter BP, temperature, or pulse. At least one is required.
-          Older entries cannot be edited (FR-2.4).
+          Enter BP, temperature, or pulse. At least one is required.
+          Older entries cannot be edited.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-5">
@@ -180,7 +180,7 @@ function VitalsHistory({ vitals }) {
         </div>
       ))}
       <p className="text-center text-xs text-gray-400 pt-2">
-        Read-only history — FR-2.4: older vitals cannot be modified
+        Read-only history: older vitals cannot be modified
       </p>
     </div>
   );
