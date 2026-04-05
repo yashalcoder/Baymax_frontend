@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Search, Save, X, Beaker } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,67 +14,54 @@ import Sidebar from "@/components/sidebar";
 import Navbar from "@/components/Navbar";
 
 export default function ManageTestsPage() {
-  const [tests, setTests] = useState([
-    {
-      id: 1,
-      name: "Complete Blood Count (CBC)",
-      category: "Hematology",
-      price: "800",
-      sampleType: "Blood",
-      turnaroundTime: "24 hours",
-      code: "CBC-01",
-    },
-    {
-      id: 2,
-      name: "Lipid Profile",
-      category: "Biochemistry",
-      price: "1500",
-      sampleType: "Blood",
-      turnaroundTime: "48 hours",
-      code: "LIP-12",
-    },
-    {
-      id: 3,
-      name: "Thyroid Function Test",
-      category: "Endocrinology",
-      price: "1800",
-      sampleType: "Blood",
-      turnaroundTime: "72 hours",
-      code: "TFT-07",
-    },
-    {
-      id: 4,
-      name: "Fasting Blood Sugar",
-      category: "Glucose",
-      price: "500",
-      sampleType: "Blood",
-      turnaroundTime: "Same day",
-      code: "GLU-03",
-    },
-  ]);
-
+  const [tests, setTests] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
-    code: "",
     category: "Hematology",
     price: "",
+    code: "",
     sampleType: "Blood",
-    turnaroundTime: "",
+    turnaroundValue: "",
+    turnaroundUnit: "Hours",
   });
 
   const categories = [
-    "Hematology",
-    "Biochemistry",
-    "Endocrinology",
-    "Microbiology",
-    "Serology",
-    "Imaging",
-    "Glucose",
+    "Hematology", "Biochemistry", "Endocrinology",
+    "Microbiology", "Serology", "Imaging", "Glucose",
   ];
+
+  useEffect(() => {
+    fetchTests();
+  }, []);
+
+  const fetchTests = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/tests`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (Array.isArray(data)) setTests(data);
+    } catch (error) {
+      console.error("Error fetching tests:", error);
+      setError("Failed to load tests");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredTests = tests.filter(
     (test) =>
@@ -86,78 +73,216 @@ export default function ManageTestsPage() {
   const resetForm = () => {
     setFormData({
       name: "",
-      code: "",
       category: "Hematology",
       price: "",
+      code: "",
       sampleType: "Blood",
-      turnaroundTime: "",
+      turnaroundValue: "",
+      turnaroundUnit: "Hours",
     });
     setIsAdding(false);
     setEditingId(null);
+    setError("");
+    setSuccessMsg("");
   };
 
-  const handleAdd = () => {
-    if (!formData.name || !formData.category || !formData.price) return;
+  const handleAdd = async () => {
+    if (!formData.name || !formData.category || !formData.price) {
+      setError("Name, category and price are required");
+      return;
+    }
 
-    const newTest = {
-      id: tests.length ? tests[tests.length - 1].id + 1 : 1,
-      ...formData,
-    };
+    if (formData.name.trim().length < 3) {
+      setError("Test name must be at least 3 characters");
+      return;
+    }
 
-    setTests([...tests, newTest]);
-    resetForm();
+    if (Number(formData.price) <= 0) {
+      setError("Price must be greater than 0");
+      return;
+    }
+    if (formData.turnaroundValue && Number(formData.turnaroundValue) === 0) {
+      setError("Turnaround time cannot be 0")
+      return
+    }
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/test`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            category: formData.category,
+            price: Number(formData.price),
+            code: formData.code,
+            sampleType: formData.sampleType,
+            turnaroundValue: Number(formData.turnaroundValue) || 0,
+            turnaroundUnit: formData.turnaroundUnit,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (data.tests) {
+        setTests(data.tests);
+        resetForm();
+        setSuccessMsg("Test added successfully!");
+        setTimeout(() => setSuccessMsg(""), 3000);
+      } else {
+        setError(data.message || "Failed to add test");
+      }
+    } catch (error) {
+      console.error("Error adding test:", error);
+      setError("Failed to add test");
+    }
   };
 
-  const handleEdit = (id) => {
-    const test = tests.find((t) => t.id === id);
-    if (!test) return;
-    setFormData(test);
-    setEditingId(id);
+  const handleEdit = (test) => {
+    setFormData({
+      name: test.name,
+      category: test.category,
+      price: test.price,
+      code: test.code || "",
+      sampleType: test.sampleType || "Blood",
+      turnaroundValue: test.turnaroundValue || "",
+      turnaroundUnit: test.turnaroundUnit || "Hours",
+    });
+    setEditingId(test._id);
     setIsAdding(true);
   };
 
-  const handleUpdate = () => {
-    setTests(
-      tests.map((t) => (t.id === editingId ? { ...t, ...formData } : t))
-    );
-    resetForm();
+  const handleUpdate = async () => {
+    if (!formData.name || !formData.category || !formData.price) {
+      setError("Name, category and price are required");
+      return;
+    }
+
+    if (formData.name.trim().length < 3) {
+      setError("Test name must be at least 3 characters");
+      return;
+    }
+
+    if (Number(formData.price) <= 0) {
+      setError("Price must be greater than 0");
+      return;
+    }
+    if (formData.turnaroundValue && Number(formData.turnaroundValue) === 0) {
+      setError("Turnaround time cannot be 0")
+      return
+    }
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/test/${editingId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            category: formData.category,
+            price: Number(formData.price),
+            code: formData.code,
+            sampleType: formData.sampleType,
+            turnaroundValue: Number(formData.turnaroundValue) || 0,
+            turnaroundUnit: formData.turnaroundUnit,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (data.test) {
+        setTests(tests.map((t) => (t._id === editingId ? data.test : t)));
+        resetForm();
+        setSuccessMsg("Test updated successfully!");
+        setTimeout(() => setSuccessMsg(""), 3000);
+      } else {
+        setError(data.message || "Failed to update test");
+      }
+    } catch (error) {
+      console.error("Error updating test:", error);
+      setError("Failed to update test");
+    }
   };
 
-  const handleDelete = (id) => {
-    setTests(tests.filter((t) => t.id !== id));
+  const handleDelete = async (testId) => {
+    if (!confirm("Are you sure you want to delete this test?")) return;
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/test/${testId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setTests(tests.filter((t) => t._id !== testId));
+      setSuccessMsg("Test deleted successfully!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (error) {
+      console.error("Error deleting test:", error);
+      setError("Failed to delete test");
+    }
+  };
+
+  const handleToggleAvailable = async (test) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/test/${test._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            available: !test.available,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (data.test) {
+        setTests(tests.map((t) => (t._id === test._id ? data.test : t)));
+        setSuccessMsg(`Test ${!test.available ? "enabled" : "disabled"} successfully!`);
+        setTimeout(() => setSuccessMsg(""), 3000);
+      }
+    } catch (error) {
+      console.error("Error toggling test:", error);
+      setError("Failed to update test availability");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-hero">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="flex">
         <Sidebar />
         <main className="flex-1 p-6 md:p-8">
           <div className="max-w-7xl mx-auto space-y-8">
-            {/* Header */}
+
             <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-1">
                   Lab Tests
                 </h1>
                 <p className="text-muted-foreground text-sm">
-                  Add, update, or remove diagnostic tests from your lab
-                  catalogue.
+                  Add, update, or remove diagnostic tests from your lab catalogue.
                 </p>
               </div>
-
               <Button
                 className="bg-hero-gradient text-white shadow-medical-lg hover:opacity-90 transition-opacity"
                 onClick={() => {
                   setIsAdding(true);
                   setEditingId(null);
                   setFormData({
-                    name: "",
-                    code: "",
-                    category: "Hematology",
-                    price: "",
-                    sampleType: "Blood",
-                    turnaroundTime: "",
+                    name: "", category: "Hematology", price: "",
+                    code: "", sampleType: "Blood",
+                    turnaroundValue: "", turnaroundUnit: "Hours",
                   });
                 }}
               >
@@ -166,16 +291,23 @@ export default function ManageTestsPage() {
               </Button>
             </div>
 
-            {/* Add / Edit Form */}
+            {successMsg && (
+              <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg text-sm">
+                {successMsg}
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             {isAdding && (
               <Card className="border-2 border-hero-gradient/20 shadow-medical-lg">
                 <CardHeader>
-                  <CardTitle>
-                    {editingId ? "Edit Test" : "Add New Test"}
-                  </CardTitle>
+                  <CardTitle>{editingId ? "Edit Test" : "Add New Test"}</CardTitle>
                   <CardDescription>
-                    Enter test details like name, code, category, sample type,
-                    and price.
+                    Enter test details like name, code, category, sample type, and price.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -184,54 +316,36 @@ export default function ManageTestsPage() {
                       type="text"
                       placeholder="Test Name (e.g. Complete Blood Count)"
                       value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                     />
-
                     <input
                       type="text"
                       placeholder="Test Code (e.g. CBC-01)"
                       value={formData.code}
-                      onChange={(e) =>
-                        setFormData({ ...formData, code: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                       className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                     />
-
                     <select
                       value={formData.category}
-                      onChange={(e) =>
-                        setFormData({ ...formData, category: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                       {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
+                        <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
-
                     <input
                       type="number"
+                      min="0"
                       placeholder="Price (Rs.)"
                       value={formData.price}
-                      onChange={(e) =>
-                        setFormData({ ...formData, price: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                       className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                     />
-
                     <select
                       value={formData.sampleType}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          sampleType: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormData({ ...formData, sampleType: e.target.value })}
                       className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                       <option>Blood</option>
@@ -240,24 +354,31 @@ export default function ManageTestsPage() {
                       <option>Saliva</option>
                     </select>
 
-                    <input
-                      type="text"
-                      placeholder="Turnaround Time (e.g. 24 hours)"
-                      value={formData.turnaroundTime}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          turnaroundTime: e.target.value,
-                        })
-                      }
-                      className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
+                    {/* Turnaround Time — number + unit */}
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="Time (e.g. 24)"
+                        value={formData.turnaroundValue}
+                        onChange={(e) => setFormData({ ...formData, turnaroundValue: e.target.value })}
+                        className="w-1/2 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      <select
+                        value={formData.turnaroundUnit}
+                        onChange={(e) => setFormData({ ...formData, turnaroundUnit: e.target.value })}
+                        className="w-1/2 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option>Hours</option>
+                        <option>Days</option>
+                        <option>Weeks</option>
+                      </select>
+                    </div>
 
+                  </div>
                   <div className="flex justify-end gap-3">
                     <Button variant="outline" onClick={resetForm}>
-                      <X className="w-4 h-4 mr-2" />
-                      Cancel
+                      <X className="w-4 h-4 mr-2" /> Cancel
                     </Button>
                     <Button
                       className="bg-hero-gradient text-white"
@@ -271,7 +392,6 @@ export default function ManageTestsPage() {
               </Card>
             )}
 
-            {/* Search */}
             <div className="flex gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
@@ -285,7 +405,6 @@ export default function ManageTestsPage() {
               </div>
             </div>
 
-            {/* Tests Table */}
             <Card className="shadow-medical-lg border-border">
               <CardHeader className="border-b border-border">
                 <CardTitle className="text-2xl">All Lab Tests</CardTitle>
@@ -294,44 +413,33 @@ export default function ManageTestsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
-                {filteredTests.length === 0 ? (
+                {loading ? (
+                  <div className="py-10 text-center text-sm text-muted-foreground flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <span>Loading tests...</span>
+                  </div>
+                ) : filteredTests.length === 0 ? (
                   <div className="py-10 text-center text-sm text-muted-foreground">
-                    No tests match your search.
+                    No tests found.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead className="bg-secondary/30 border-b border-border">
                         <tr>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                            Test Name
-                          </th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                            Code
-                          </th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                            Category
-                          </th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                            Sample Type
-                          </th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                            Price
-                          </th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                            Turnaround
-                          </th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                            Actions
-                          </th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Test Name</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Code</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Category</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Sample Type</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Price</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Turnaround</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Available</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
                         {filteredTests.map((test) => (
-                          <tr
-                            key={test.id}
-                            className="hover:bg-secondary/50 transition-colors"
-                          >
+                          <tr key={test._id} className={`hover:bg-secondary/50 transition-colors ${test.available === false ? "opacity-60" : ""}`}>
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-2">
                                 <Beaker className="w-4 h-4 text-primary" />
@@ -346,25 +454,35 @@ export default function ManageTestsPage() {
                                 {test.category}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-sm">
-                              {test.sampleType}
-                            </td>
+                            <td className="px-6 py-4 text-sm">{test.sampleType || "-"}</td>
                             <td className="px-6 py-4 font-semibold text-primary">
                               Rs. {test.price}
                             </td>
                             <td className="px-6 py-4 text-sm">
-                              {test.turnaroundTime}
+                              {test.turnaroundValue ? `${test.turnaroundValue} ${test.turnaroundUnit}` : "-"}
+                            </td>
+                            <td className="px-6 py-4">
+                              <button
+                                onClick={() => handleToggleAvailable(test)}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${test.available !== false ? "bg-green-500" : "bg-gray-300"
+                                  }`}
+                              >
+                                <span
+                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${test.available !== false ? "translate-x-6" : "translate-x-1"
+                                    }`}
+                                />
+                              </button>
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex gap-2">
                                 <button
-                                  onClick={() => handleEdit(test.id)}
+                                  onClick={() => handleEdit(test)}
                                   className="p-2 hover:bg-secondary rounded-lg transition-colors text-primary"
                                 >
                                   <Edit2 className="w-4 h-4" />
                                 </button>
                                 <button
-                                  onClick={() => handleDelete(test.id)}
+                                  onClick={() => handleDelete(test._id)}
                                   className="p-2 hover:bg-secondary rounded-lg transition-colors text-red-500"
                                 >
                                   <Trash2 className="w-4 h-4" />

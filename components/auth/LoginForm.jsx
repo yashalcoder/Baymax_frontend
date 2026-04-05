@@ -53,6 +53,7 @@ export default function LoginForm({ role }) {
 
       if (token) {
         localStorage.setItem("token", token);
+        localStorage.setItem("role", role);
         if (userData) localStorage.setItem("user", JSON.stringify(userData));
         document.cookie = `token=${token}; path=/;`;
       }

@@ -105,7 +105,32 @@ export default function PharmacySignup() {
       });
       return;
     }
-
+    // Coordinates format check
+    const coordParts = formData.location.split(",").map((c) => parseFloat(c.trim()))
+    if (coordParts.length !== 2 || isNaN(coordParts[0]) || isNaN(coordParts[1])) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Location",
+        text: "Please enter valid coordinates (e.g. 31.5204, 74.3587)",
+      })
+      return
+    }
+    if (coordParts[0] < -90 || coordParts[0] > 90) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Latitude",
+        text: "Latitude must be between -90 and 90",
+      })
+      return
+    }
+    if (coordParts[1] < -180 || coordParts[1] > 180) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Longitude",
+        text: "Longitude must be between -180 and 180",
+      })
+      return
+    }
     // Password validations
     if (formData.password !== formData.confirmPassword) {
       Swal.fire({
@@ -133,7 +158,7 @@ export default function PharmacySignup() {
     });
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...formData, role: "pharmacy" }),
@@ -152,6 +177,7 @@ export default function PharmacySignup() {
 
       if (data.token) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("role", "pharmacy"); 
         localStorage.setItem("user", JSON.stringify(data.user));
         document.cookie = `token=${data.token}; path=/;`;
       }

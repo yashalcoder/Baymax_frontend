@@ -24,6 +24,7 @@ export default function LaboratorySignup() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
+    ownerName: "",
     address: "",
     location: "",
     password: "",
@@ -67,6 +68,7 @@ export default function LaboratorySignup() {
     // Required fields check
     if (
       !formData.name ||
+      !formData.ownerName ||
       !formData.email ||
       !formData.contact ||
       !formData.address ||
@@ -112,7 +114,32 @@ export default function LaboratorySignup() {
       });
       return;
     }
-
+    // Coordinates format check
+    const coordParts = formData.location.split(",").map((c) => parseFloat(c.trim()))
+    if (coordParts.length !== 2 || isNaN(coordParts[0]) || isNaN(coordParts[1])) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Location",
+        text: "Please enter valid coordinates (e.g. 31.5204, 74.3587)",
+      })
+      return
+    }
+    if (coordParts[0] < -90 || coordParts[0] > 90) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Latitude",
+        text: "Latitude must be between -90 and 90",
+      })
+      return
+    }
+    if (coordParts[1] < -180 || coordParts[1] > 180) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Longitude",
+        text: "Longitude must be between -180 and 180",
+      })
+      return
+    }
     if (formData.password.length < 6) {
       Swal.fire({
         icon: "error",
@@ -130,10 +157,10 @@ export default function LaboratorySignup() {
     });
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, role: "pharmacy" }),
+        body: JSON.stringify({ ...formData, role: "laboratory" }),
       });
 
       const data = await res.json();
@@ -149,6 +176,7 @@ export default function LaboratorySignup() {
 
       if (data.token) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("role", "laboratory");
         localStorage.setItem("user", JSON.stringify(data.user));
         document.cookie = `token=${data.token}; path=/;`;
       }
@@ -215,6 +243,18 @@ export default function LaboratorySignup() {
                       placeholder="Your lab name"
                       required
                     />
+                  </div>
+                  <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                     Owner Name *
+                    </label>
+                    <Input
+                     name="ownerName"
+                     value={formData.ownerName}
+                     onChange={handleChange}
+                     placeholder="Lab owner's full name"
+                     required
+                   />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
