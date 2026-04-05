@@ -19,6 +19,8 @@ const PharmacyDashboard = () => {
 
   useEffect(() => {
     async function fetchData() {
+      const token = localStorage.getItem("token");
+      console.log("Pharmacy ",token)
       try {
         const medicinesRes = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/pharmacy/medicines`,

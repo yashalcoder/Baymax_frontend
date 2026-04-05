@@ -216,13 +216,16 @@ useEffect(() => {
       <div className="p-6 border-b border-border">
         <div className="flex flex-col items-center">
           <div className="relative">
-            <div className="w-16 h-16 rounded-full overflow-hidden shadow ring-4 ring-blue-200">
+            {/* <div className="w-16 h-16 rounded-full overflow-hidden shadow ring-4 ring-blue-200">
               <Image
                 src={profileImageSource}
                 alt="Profile Picture"
                 className="w-full h-full object-cover"
               />
-            </div>
+            </div> */}
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-hero-gradient text-white shadow ring-4 ring-blue-200 flex items-center justify-center text-2xl font-bold">
+  {user?.name?.charAt(0).toUpperCase() || "U"}
+</div>
             <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-card"></div>
           </div>
 
@@ -250,7 +253,7 @@ useEffect(() => {
             // Update the button className:
 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${ 
   pathname === item.route  // Changed this line
-    ? "bg-blue-600 text-white shadow" 
+    ? "bg-hero-gradient text-white shadow" 
     : "text-muted-foreground hover:bg-secondary hover:text-foreground" 
 }`}
           >
