@@ -21,7 +21,7 @@ export default function LabDashboard() {
     async function fetchData() {
       try {
         const testsRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/tests`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/my-tests`,
           {
             method: "GET",
             headers: {

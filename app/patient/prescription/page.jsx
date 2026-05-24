@@ -22,7 +22,6 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation";
 
-
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 export default function PrescriptionPage() {
@@ -60,6 +59,7 @@ export default function PrescriptionPage() {
         }
 
         setPrescriptions(data.prescriptions || [])
+        console.log("Fetched prescriptions:", data.prescriptions)
       } catch (err) {
         console.error("Prescription fetch error:", err)
         setError("Could not connect to server.")
