@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import Logo from "@/public/bay.png";
+import Link from "next/link";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -44,13 +45,13 @@ export default function Header() {
 
         {/* CTA Buttons */}
         <div className="hidden md:flex items-center gap-3">
-          <a
+          <Link
             href="/login"
             className="px-4 py-2 rounded-xl border-2 border-blue-100 font-semibold text-[#1b2d5e] hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-sm"
           >
             Sign In
-          </a>
-          <a
+          </Link>
+          <Link
             href="/signup"
             className="px-4 py-2 rounded-xl font-bold text-white text-sm
               bg-gradient-to-r from-[#1b2d5e] to-[#1a73e8]
@@ -60,7 +61,7 @@ export default function Header() {
             style={{ fontFamily: "'Nunito', sans-serif" }}
           >
             Get Started
-          </a>
+          </Link>
         </div>
 
         {/* Mobile hamburger */}
@@ -91,13 +92,13 @@ export default function Header() {
             </a>
           ))}
           <div className="flex gap-3 mt-2">
-            <a href="/login" className="flex-1 text-center px-4 py-2.5 rounded-xl border-2 border-blue-100 font-semibold text-[#1b2d5e] text-sm">
+            <Link href="/login" className="flex-1 text-center px-4 py-2.5 rounded-xl border-2 border-blue-100 font-semibold text-[#1b2d5e] text-sm">
               Sign In
-            </a>
-            <a href="/signup" className="flex-1 text-center px-4 py-2.5 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-[#1b2d5e] to-[#1a73e8]"
+            </Link>
+            <Link href="/signup" className="flex-1 text-center px-4 py-2.5 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-[#1b2d5e] to-[#1a73e8]"
               style={{ fontFamily: "'Nunito', sans-serif" }}>
               Get Started
-            </a>
+            </Link>
           </div>
         </div>
       )}

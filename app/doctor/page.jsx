@@ -41,41 +41,41 @@ useEffect(() => {
   async function fetchPatients() {
     try {
       const token = localStorage.getItem("token");
+      const headers = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      };
 
-      // 🧑‍⚕️ Patients
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/my-patients`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+      // 🧑‍⚕️ Fetch patients and consultations in parallel
+      const [resPatients, resConsultations] = await Promise.all([
+        fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/my-patients`,
+          {
+            method: "GET",
+            headers
           }
-        }
-      );
+        ),
+        fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/getConsultations`,
+          {
+            method: "GET",
+            headers
+          }
+        )
+      ]);
 
-      const patients = await response.json();
+      const [patients, consultations] = await Promise.all([
+        resPatients.json(),
+        resConsultations.json()
+      ]);
+
       console.log("Patients:", patients);
-
-      // ✅ Handle both cases (array OR object)
-      setCount(Array.isArray(patients) ? patients.length : patients.count || 0);
-    
-      // 📋 Consultations
-      const response2 = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/getConsultations`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          }
-        }
-      );
-
-      const consultations = await response2.json();
       console.log("Consultations:", consultations);
 
-      // ✅ Same safe handling
+      // ✅ Handle both cases (array OR object) for patients
+      setCount(Array.isArray(patients) ? patients.length : patients.count || 0);
+    
+      // ✅ Same safe handling for consultations
       setConsulationCount(
         Array.isArray(consultations)
           ? consultations.length

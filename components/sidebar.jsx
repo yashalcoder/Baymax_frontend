@@ -24,6 +24,7 @@ import assistantImage from "../public/assistantImage.png";
 import patientImage from "../public/patientImage.png";
 import { useRouter } from "next/navigation";
 import { useSidebar } from "@/components/sidebar-provider";
+import Link from "next/link";
 
 export default function Sidebar() {
   const router = useRouter();
@@ -247,19 +248,18 @@ useEffect(() => {
       {/* Menu Items */}
       <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
         {menuItems.map((item, idx) => (
-          <button
+          <Link
             key={idx}
-            onClick={() => handleClick(idx, item.route)}
-            // Update the button className:
-className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${ 
-  pathname === item.route  // Changed this line
-    ? "bg-hero-gradient text-white shadow" 
-    : "text-muted-foreground hover:bg-secondary hover:text-foreground" 
-}`}
+            href={item.route}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${ 
+              pathname === item.route  // Changed this line
+                ? "bg-hero-gradient text-white shadow" 
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground" 
+            }`}
           >
             <item.icon className="w-5 h-5" />
             {!collapsed && <span className="font-medium">{item.label}</span>}
-          </button>
+          </Link>
         ))}
       </nav>
 

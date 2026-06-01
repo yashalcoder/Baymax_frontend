@@ -1,8 +1,8 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import Link from "next/link";
 
 export default function LoginForm({ role }) {
   const [email, setEmail] = useState("");
@@ -120,9 +120,9 @@ export default function LoginForm({ role }) {
           <div className="mt-4 text-center text-gray-500">
             <p>
               Don't have an account?{" "}
-              <a href="/signup" className="text-indigo-600 font-medium hover:underline">
+              <Link href="/signup" className="text-indigo-600 font-medium hover:underline">
                 Sign Up
-              </a>
+              </Link>
             </p>
 
             <p className="mt-2">

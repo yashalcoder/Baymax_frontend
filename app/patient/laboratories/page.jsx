@@ -9,21 +9,21 @@ import {
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 function haversineKm(lat1, lng1, lat2, lng2) {
-  const R    = 6371;
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLng / 2) *
+    Math.sin(dLng / 2);
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 // ─── Near Me Modal ──────────────────────────────────────────────────────────
 function NearMeModal({ onClose, laboratories }) {
-  const mapRef        = useRef(null);
+  const mapRef = useRef(null);
   const leafletMapRef = useRef(null);
   const [status, setStatus] = useState("locating");
 
@@ -31,7 +31,7 @@ function NearMeModal({ onClose, laboratories }) {
     if (!navigator.geolocation) { setStatus("denied"); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => initLeafletMap(pos.coords.latitude, pos.coords.longitude),
-      ()    => setStatus("denied"),
+      () => setStatus("denied"),
       { timeout: 10000 }
     );
   }, []);
@@ -55,14 +55,14 @@ function NearMeModal({ onClose, laboratories }) {
         icon: L.divIcon({
           className: "",
           html: `<div style="width:18px;height:18px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>`,
-          iconSize: [18,18], iconAnchor: [9,9],
+          iconSize: [18, 18], iconAnchor: [9, 9],
         }),
       }).addTo(map).bindPopup("<b>📍 Your Location</b>").openPopup();
 
       const labIcon = L.divIcon({
         className: "",
         html: `<div style="width:34px;height:34px;background:#7c3aed;border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.35);font-size:16px">🔬</div>`,
-        iconSize: [34,34], iconAnchor: [17,17],
+        iconSize: [34, 34], iconAnchor: [17, 17],
       });
       laboratories.filter(l => l.location?.lat && l.location?.lng).forEach(lab => {
         const dist = haversineKm(userLat, userLng, lab.location.lat, lab.location.lng).toFixed(1);
@@ -123,16 +123,15 @@ function TestRow({ testName, labTests, lab }) {
   const matchedTest = labTests.find(
     (t) => t.name?.toLowerCase() === testName.toLowerCase()
   );
-  const testId  = matchedTest?._id || matchedTest?.id;
-  const price   = testId ? lab.prices?.[testId] : null;
+  const testId = matchedTest?._id || matchedTest?.id;
+  const price = testId ? lab.prices?.[testId] : null;
   const offered = price != null;
 
   const getFinalPrice = (p, discount = 0) => Math.round(p - (p * discount) / 100);
 
   return (
-    <div className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm ${
-      offered ? "bg-blue-50 border border-blue-200" : "bg-red-50 border border-red-200"
-    }`}>
+    <div className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm ${offered ? "bg-blue-50 border border-blue-200" : "bg-red-50 border border-red-200"
+      }`}>
       <div className="flex items-center gap-2">
         {offered
           ? <CheckCircle className="w-4 h-4 text-blue-600 shrink-0" />
@@ -143,16 +142,16 @@ function TestRow({ testName, labTests, lab }) {
       </div>
       {offered
         ? <div className="flex items-center gap-1.5 shrink-0">
-            {(lab.discount || 0) > 0 && (
-              <span className="text-xs text-red-400 line-through">Rs. {price}</span>
-            )}
-            <span className="font-bold text-blue-700">
-              Rs. {getFinalPrice(price, lab.discount)}
-            </span>
-            {(lab.discount || 0) > 0 && (
-              <span className="text-xs text-green-600 font-semibold">{lab.discount}% off</span>
-            )}
-          </div>
+          {(lab.discount || 0) > 0 && (
+            <span className="text-xs text-red-400 line-through">Rs. {price}</span>
+          )}
+          <span className="font-bold text-blue-700">
+            Rs. {getFinalPrice(price, lab.discount)}
+          </span>
+          {(lab.discount || 0) > 0 && (
+            <span className="text-xs text-green-600 font-semibold">{lab.discount}% off</span>
+          )}
+        </div>
         : <span className="text-red-500 font-medium shrink-0 text-xs">Not Available</span>}
     </div>
   );
@@ -164,20 +163,19 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
 
   const availableCount = prescribedTests.filter(test => {
     const matched = labTests.find(t => t.name?.toLowerCase() === test.toLowerCase());
-    const testId  = matched?._id || matched?.id;
+    const testId = matched?._id || matched?.id;
     return testId && lab.prices?.[testId] != null;
   }).length;
-  const totalCount     = prescribedTests.length;
+  const totalCount = prescribedTests.length;
   const hasPrescription = totalCount > 0;
 
   const dist = distanceLabel(lab);
 
   return (
-    <div className={`bg-white rounded-xl shadow-md border-2 transition-all hover:shadow-lg ${
-      rank === 0 && hasPrescription
+    <div className={`bg-white rounded-xl shadow-md border-2 transition-all hover:shadow-lg ${rank === 0 && hasPrescription
         ? "border-blue-500 ring-4 ring-blue-100"
         : "border-gray-200 hover:border-blue-300"
-    }`}>
+      }`}>
       {rank === 0 && hasPrescription && (
         <div className="px-5 pt-4">
           <span className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
@@ -234,21 +232,19 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
 
         {/* Coverage summary */}
         {hasPrescription && (
-          <div className={`mb-3 px-4 py-2.5 rounded-lg border flex items-center justify-between ${
-            availableCount === totalCount
+          <div className={`mb-3 px-4 py-2.5 rounded-lg border flex items-center justify-between ${availableCount === totalCount
               ? "bg-blue-50 border-blue-200"
               : availableCount > 0
-              ? "bg-yellow-50 border-yellow-200"
-              : "bg-red-50 border-red-200"
-          }`}>
+                ? "bg-yellow-50 border-yellow-200"
+                : "bg-red-50 border-red-200"
+            }`}>
             <span className="text-sm font-semibold text-gray-700">Prescription Coverage</span>
-            <span className={`text-sm font-bold ${
-              availableCount === totalCount
+            <span className={`text-sm font-bold ${availableCount === totalCount
                 ? "text-blue-700"
                 : availableCount > 0
-                ? "text-yellow-700"
-                : "text-red-600"
-            }`}>
+                  ? "text-yellow-700"
+                  : "text-red-600"
+              }`}>
               {availableCount} / {totalCount} tests
             </span>
           </div>
@@ -302,21 +298,21 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
 
 // ─── Test type config ────────────────────────────────────────────────────────
 const TEST_TYPE_CONFIG = {
-  blood: { label: "Blood Tests",  emoji: "🩸", bg: "bg-red-50",    border: "border-red-200",    text: "text-red-700",    badge: "bg-red-100 text-red-700" },
-  urine: { label: "Urine Tests",  emoji: "🧪", bg: "bg-amber-50",  border: "border-amber-200",  text: "text-amber-700",  badge: "bg-amber-100 text-amber-700" },
-  other: { label: "Other Tests",  emoji: "🔬", bg: "bg-blue-50",   border: "border-blue-200",   text: "text-blue-700",   badge: "bg-blue-100 text-blue-700" },
+  blood: { label: "Blood Tests", emoji: "🩸", bg: "bg-red-50", border: "border-red-200", text: "text-red-700", badge: "bg-red-100 text-red-700" },
+  urine: { label: "Urine Tests", emoji: "🧪", bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700", badge: "bg-amber-100 text-amber-700" },
+  other: { label: "Other Tests", emoji: "🔬", bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700", badge: "bg-blue-100 text-blue-700" },
 };
 
 // ─── Inner page ─────────────────────────────────────────────────────────────
 function LaboratoryPageInner() {
-  const [searchTerm, setSearchTerm]     = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [laboratories, setLaboratories] = useState([]);
-  const [labTests, setLabTests]         = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState(null);
-  const [showNearMe, setShowNearMe]     = useState(false);
+  const [labTests, setLabTests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showNearMe, setShowNearMe] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
-  const searchParams                    = useSearchParams();
+  const searchParams = useSearchParams();
 
   // Parse tests from URL: supports both formats:
   //   ?tests=blood:CBC,blood:Hemoglobin,urine:Urinalysis   (typed)
@@ -350,24 +346,24 @@ function LaboratoryPageInner() {
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(
       (p) => setUserLocation({ lat: p.coords.latitude, lng: p.coords.longitude }),
-      () => {}
+      () => { }
     );
   }, []);
 
   useEffect(() => {
     (async () => {
       try {
-        const token   = localStorage.getItem("token");
+        const token = localStorage.getItem("token");
         const headers = {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         };
         const [testsRes, labsRes] = await Promise.all([
           fetch(`${API}/api/laboratory/tests`, { headers }),  // FIX: was /api/laboratory/tests
-          fetch(`${API}/api/laboratory`,        { headers }),  // FIX: was /api/laboratory
+          fetch(`${API}/api/laboratory`, { headers }),  // FIX: was /api/laboratory
         ]);
         if (testsRes.ok) setLabTests((await testsRes.json()).tests || []);
-        if (labsRes.ok)  setLaboratories((await labsRes.json()).laboratories || []);
+        if (labsRes.ok) setLaboratories((await labsRes.json()).laboratories || []);
       } catch {
         setError("Could not connect to server.");
       } finally {
@@ -385,7 +381,7 @@ function LaboratoryPageInner() {
   const coverageScore = (lab) =>
     prescribedTestNames.filter(test => {
       const matched = labTests.find(t => t.name?.toLowerCase() === test.toLowerCase());
-      const testId  = matched?._id || matched?.id;
+      const testId = matched?._id || matched?.id;
       return testId && lab.prices?.[testId] != null;
     }).length;
 
@@ -489,23 +485,20 @@ function LaboratoryPageInner() {
                 <Navigation className="w-5 h-5" /> Near Me
               </button>
             </div>
-
             <div className="flex flex-wrap gap-3">
               {categories.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2 rounded-full border-2 text-sm font-medium transition-all flex items-center gap-2 ${
-                    selectedCategory === cat.id
+                  className={`px-4 py-2 rounded-full border-2 text-sm font-medium transition-all flex items-center gap-2 ${selectedCategory === cat.id
                       ? "bg-hero-gradient text-white border-transparent"
                       : "bg-white text-gray-700 border-gray-300 hover:border-purple-400"
-                  }`}
+                    }`}
                 >
                   {cat.icon} {cat.name}
                 </button>
               ))}
-            </div>
-          </div>
+            </div>          </div>
 
           {/* Lab cards */}
           {filteredLabs.length === 0 ? (

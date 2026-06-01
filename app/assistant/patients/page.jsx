@@ -9,9 +9,15 @@ import {
 import { Users, User, Mail, Phone, Heart, Search } from "lucide-react";
 
 export default function AssistantPatientsPage() {
-  const token   = useMemo(() => localStorage.getItem("token"), []);
+  const [token, setToken] = useState(null);
   const [patients, setPatients] = useState([]);
   const [loading, setLoading]   = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setToken(localStorage.getItem("token"));
+    }
+  }, []);
   const [error,   setError]     = useState("");
   const [filter,  setFilter]    = useState("");
 
