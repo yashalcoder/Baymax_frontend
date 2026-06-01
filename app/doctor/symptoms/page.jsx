@@ -18,7 +18,12 @@ export default function DiagnosisPage() {
   const [editingPatient, setEditingPatient] = useState(false);
 // At top of DiagnosisPage component
 const [loading, setLoading] = useState(true);
-const consultationId=localStorage.getItem("consultationId");
+const [consultationId, setConsultationId] = useState(null);
+
+useEffect(() => {
+  const id = localStorage.getItem("consultationId");
+  setConsultationId(id);
+}, []);
 const backendUrl=process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
   const [diagnosisData, setDiagnosisData] = useState()
 const {setPatientData} = usePatient();
@@ -131,6 +136,7 @@ const handleSaveDisease = (updatedDisease) => {
 };
 
 useEffect(() => {
+   if (!consultationId) return; 
   fetch(`${backendUrl}/api/diagnosis/${consultationId}`,{
     method: "GET",
     headers: {
@@ -146,7 +152,7 @@ useEffect(() => {
       setPatientData(data.patientInfo); // Set patient data in context
       setLoading(false);
     });
-}, []);
+}, [consultationId]);
 
 if (loading) return <div>Loading...</div>;
   const getConfidenceColor = (confidence) => {
