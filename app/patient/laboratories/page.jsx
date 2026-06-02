@@ -490,7 +490,7 @@ function LaboratoryPageInner() {
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            {/* <div className="flex flex-wrap gap-3">
               {categories.map((cat) => (
                 <button
                   key={cat.id}
@@ -504,7 +504,7 @@ function LaboratoryPageInner() {
                   {cat.icon} {cat.name}
                 </button>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* Lab cards */}

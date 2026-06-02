@@ -44,7 +44,7 @@ export default function ManageTestsPage() {
   const fetchTests = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/tests`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/my-tests`,
         {
           method: "GET",
           headers: {
