@@ -245,9 +245,10 @@ const handleRemoveFile = () => {
       URL.revokeObjectURL(url);
     }
   };
- const token = localStorage.getItem("token");
+//  const token = localStorage.getItem("token");//removng from here and passing in below functio fro build erro
 
 const handleSendToWhisper = async () => {
+  const token = localStorage.getItem("token");
   if (!audioBlob && !uploadedFile) {
     Swal.fire({ title: "No Audio", text: "Please record audio first!", icon: "warning" });
     return;

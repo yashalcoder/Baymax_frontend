@@ -190,7 +190,15 @@ function VitalsHistory({ vitals }) {
 function VitalsPageInner() {
   const searchParams = useSearchParams();
   const preloadId    = searchParams.get("patientId") || "";
-  const token        = useMemo(() => localStorage.getItem("token"), []);
+  // const token        = useMemo(() => localStorage.getItem("token"), []); repalce for build error
+  const [token, setToken] = useState("");
+
+useEffect(() => {
+  const storedToken = localStorage.getItem("token");
+  if (storedToken) {
+    setToken(storedToken);
+  }
+}, []);
 
   const [query,   setQuery]   = useState("");
   const [results, setResults] = useState([]);
@@ -217,10 +225,14 @@ function VitalsPageInner() {
   }, [token]);
 
   // preload if query param given
-  useState(() => {
-    if (preloadId) loadPatient(preloadId);
-  });
-
+  // useState(() => {
+  //   if (preloadId) loadPatient(preloadId);
+  // });//for build error replace with
+useEffect(() => {
+  if (preloadId && token) {
+    loadPatient(preloadId);
+  }
+}, [preloadId, token, loadPatient]);
   const doSearch = async () => {
     const q = query.trim();
     if (!q) return;

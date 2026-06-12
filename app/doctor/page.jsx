@@ -36,59 +36,99 @@ const [consulationCount,setConsulationCount]=useState(0);
       console.log("user from localstorage " + JSON.parse(stored));
     }
   }, []);
- 
-useEffect(() => {
-  async function fetchPatients() {
-    try {
-      const token = localStorage.getItem("token");
-      const headers = {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      };
+ const fetchPatients = async () => {
+  try {
+    const token = localStorage.getItem("token");
 
-      // 🧑‍⚕️ Fetch patients and consultations in parallel
-      const [resPatients, resConsultations] = await Promise.all([
-        fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/my-patients`,
-          {
-            method: "GET",
-            headers
-          }
-        ),
-        fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/getConsultations`,
-          {
-            method: "GET",
-            headers
-          }
-        )
-      ]);
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
 
-      const [patients, consultations] = await Promise.all([
-        resPatients.json(),
-        resConsultations.json()
-      ]);
+    const [resPatients, resConsultations] = await Promise.all([
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/my-patients`, {
+        method: "GET",
+        headers,
+      }),
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/getConsultations`, {
+        method: "GET",
+        headers,
+      }),
+    ]);
 
-      console.log("Patients:", patients);
-      console.log("Consultations:", consultations);
+    const [patients, consultations] = await Promise.all([
+      resPatients.json(),
+      resConsultations.json(),
+    ]);
 
-      // ✅ Handle both cases (array OR object) for patients
-      setCount(Array.isArray(patients) ? patients.length : patients.count || 0);
-    
-      // ✅ Same safe handling for consultations
-      setConsulationCount(
-        Array.isArray(consultations)
-          ? consultations.length
-          : consultations.count || 0
-      );
-
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+    setCount(Array.isArray(patients) ? patients.length : patients.count || 0);
+    setConsulationCount(
+      Array.isArray(consultations)
+        ? consultations.length
+        : consultations.count || 0
+    );
+  } catch (err) {
+    console.error(err);
   }
+};
+useEffect(() => {
+  const stored = localStorage.getItem("user");
+  if (stored) setUser(JSON.parse(stored));
 
   fetchPatients();
 }, []);
+// useEffect(() => {
+//   async function fetchPatients() {
+//     try {
+//       const token = localStorage.getItem("token");
+//       const headers = {
+//         "Content-Type": "application/json",
+//         "Authorization": `Bearer ${token}`
+//       };
+
+//       // 🧑‍⚕️ Fetch patients and consultations in parallel
+//       const [resPatients, resConsultations] = await Promise.all([
+//         fetch(
+//           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/my-patients`,
+//           {
+//             method: "GET",
+//             headers
+//           }
+//         ),
+//         fetch(
+//           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/getConsultations`,
+//           {
+//             method: "GET",
+//             headers
+//           }
+//         )
+//       ]);
+
+//       const [patients, consultations] = await Promise.all([
+//         resPatients.json(),
+//         resConsultations.json()
+//       ]);
+
+//       console.log("Patients:", patients);
+//       console.log("Consultations:", consultations);
+
+//       // ✅ Handle both cases (array OR object) for patients
+//       setCount(Array.isArray(patients) ? patients.length : patients.count || 0);
+    
+//       // ✅ Same safe handling for consultations
+//       setConsulationCount(
+//         Array.isArray(consultations)
+//           ? consultations.length
+//           : consultations.count || 0
+//       );
+
+//     } catch (error) {
+//       console.error("Error fetching data:", error);
+//     }
+//   }
+
+//   fetchPatients();
+// }, []);//scope issue make separate fetch paiten bcz calling in dischagr unciton
 
   const stats = [
     {
@@ -116,7 +156,6 @@ useEffect(() => {
       color: "text-medical-success",
     },
   ];
-
 const handleDischarge = async (patientId) => {
   const confirm = await Swal.fire({
     title: "Patient Discharge?",
@@ -124,26 +163,32 @@ const handleDischarge = async (patientId) => {
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: "Haan, Discharge karo",
-    cancelButtonText: "Nahi"
+    cancelButtonText: "Nahi",
   });
 
+  if (!confirm.isConfirmed) return;
 
-const token = localStorage.getItem("token");
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/discharge/${patientId}`, {
-      method: "DELETE",
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-    
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/discharge/${patientId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
     const data = await res.json();
-    console.log("Discharge response:", data);
+
     if (data.status === "success") {
-      Swal.fire({ title: "Done!", text: "Patient discharge ho gaya", icon: "success" });
-      // List refresh karo
-      fetchPatients(); 
+      Swal.fire("Done!", "Patient has discharged", "success");
+      await fetchPatients(); // now works
     }
   } catch (err) {
-    Swal.fire({ title: "Error", text: "Discharge nahi hua!", icon: "error" });
+    Swal.fire("Error", "Discharge nahi hua!", "error");
   }
 };
   return (
