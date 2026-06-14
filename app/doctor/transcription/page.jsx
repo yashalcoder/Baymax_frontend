@@ -48,6 +48,7 @@ const Transcription = () => {
   const streamRef = useRef(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [uploadedFile,setUploadedFile]=useState("");
+  const [summary, setSummary] = useState(null);
   // Timer effect
 
   // --- NEW REFS FOR VISUALIZATION ---
@@ -328,7 +329,9 @@ formData.append("patientId", patientId);
 
       setTranscription(englishText);
       setUrduTranscription(urduText);
-
+if (data.transcription?.summary) {
+  setSummary(data.transcription.summary);
+}
       Swal.fire({
         title: "Transcription Complete!",
         text: `Successfully transcribed ${data.transcription.conversation.length} utterance(s)`,
@@ -663,200 +666,218 @@ formData.append("patientId", patientId);
             )}
           </CardContent>
         </Card>
-        <div className="grid grid-cols-1  md:grid-cols-2 gap-4">
-          {/* Transcription Card */}
-          <Card className="shadow-lg border-gray-200">
-            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-white to-gray-50">
-              <div className="items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-indigo-600" />
-                    </div>
-                    Transcription Output
-                  </CardTitle>
-                  <CardDescription className="mt-2">
-                    Whisper AI transcription will appear here • Click to edit
-                  </CardDescription>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCopyTranscription}
-                    disabled={!transcription}
-                    className="border-gray-300 hover:bg-gray-50 hover:cursor-pointer"
-                  >
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownloadTranscription}
-                    disabled={!transcription}
-                    className="border-gray-300 hover:bg-gray-50 hover:cursor-pointer"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleClearTranscription}
-                    disabled={!transcription}
-                    className="border-red-300 text-red-600 hover:bg-red-50 hover:cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Clear
-                  </Button>
-                  <Button
-                    size="sm"
-                    disabled={!transcription}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg hover:cursor-pointer"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Transcript
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="p-8">
-              <Textarea
-                placeholder="Transcription from Whisper AI will appear here. You can also edit the text manually after transcription..."
-                className="min-h-[500px] text-base resize-none border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent p-6 leading-relaxed"
-                value={transcription}
-                onChange={(e) => setTranscription(e.target.value)}
-              />
-
-              {/* Transcription Stats */}
-              <div className="mt-6 flex flex-wrap items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <div className="flex gap-6 text-sm text-gray-600">
-                  <span className="font-medium">
-                    {transcription.length} characters
-                  </span>
-                  <span>•</span>
-                  <span className="font-medium">
-                    {transcription.split(/\s+/).filter(Boolean).length} words
-                  </span>
-                  <span>•</span>
-                  <span className="font-medium">
-                    {transcription.split(/[.!?]+/).filter(Boolean).length}{" "}
-                    sentences
-                  </span>
-                </div>
-
-                {/* {transcription && (
-                  <Badge
-                    variant="outline"
-                    className="border-green-300 text-green-700 bg-white"
-                  >
-                    Ready to save
-                  </Badge>
-                )} */}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-lg border-gray-200">
-            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-white to-gray-50">
-              <div className="items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-indigo-600" />
-                    </div>
-                    Transcription Output
-                  </CardTitle>
-                  <CardDescription className="mt-2">
-                    Whisper AI transcription will appear here • Click to edit
-                  </CardDescription>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCopyUrduTranscription}
-                    disabled={!urduTranscription}
-                    className="border-gray-300 hover:bg-gray-50 hover:cursor-pointer"
-                  >
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownloadUrduTranscription}
-                    disabled={!urduTranscription}
-                    className="border-gray-300 hover:bg-gray-50 hover:cursor-pointer"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleClearUrduTranscription}
-                    disabled={!urduTranscription}
-                    className="border-red-300 text-red-600 hover:bg-red-50 hover:cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Clear
-                  </Button>
-                  <Button
-                    size="sm"
-                    disabled={!urduTranscription}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg hover:cursor-pointer"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Transcript
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="p-8">
-              <Textarea
-                placeholder="Transcription from Whisper AI will appear here. You can also edit the text manually after transcription..."
-                className="min-h-[500px] text-base resize-none border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent p-6 leading-relaxed"
-                value={urduTranscription}
-                onChange={(e) => setUrduTranscription(e.target.value)}
-              />
-
-              {/* Transcription Stats */}
-              <div className="mt-6 flex flex-wrap items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <div className="flex gap-6 text-sm text-gray-600">
-                  <span className="font-medium">
-                    {urduTranscription.length} characters
-                  </span>
-                  <span>•</span>
-                  <span className="font-medium">
-                    {urduTranscription.split(/\s+/).filter(Boolean).length}{" "}
-                    words
-                  </span>
-                  <span>•</span>
-                  <span className="font-medium">
-                    {urduTranscription.split(/[.!?]+/).filter(Boolean).length}{" "}
-                    sentences
-                  </span>
-                </div>
-
-                {/* {urduTranscription && (
-                  <Badge
-                    variant="outline"
-                    className="border-green-300  text-green-700 bg-white"
-                  >
-                    Ready to save
-                  </Badge>
-                )} */}
-              </div>
-            </CardContent>
-          </Card>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {/* LEFT SIDE — Transcriptions (English + Urdu) */}
+  <div className="space-y-4">
+    {/* English Transcription */}
+    <Card className="shadow-lg border-gray-200">
+      <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-white to-gray-50">
+        <div>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+              <FileText className="w-5 h-5 text-indigo-600" />
+            </div>
+            English Transcription
+          </CardTitle>
+          <CardDescription className="mt-2">
+            Speaker-separated English output • Click to edit
+          </CardDescription>
         </div>
+        <div className="flex flex-wrap gap-2 mt-3">
+          <Button variant="outline" size="sm" onClick={handleCopyTranscription} disabled={!transcription} className="border-gray-300 hover:bg-gray-50">
+            <Copy className="w-4 h-4 mr-2" /> Copy
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleDownloadTranscription} disabled={!transcription} className="border-gray-300 hover:bg-gray-50">
+            <Download className="w-4 h-4 mr-2" /> Download
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleClearTranscription} disabled={!transcription} className="border-red-300 text-red-600 hover:bg-red-50">
+            <Trash2 className="w-4 h-4 mr-2" /> Clear
+          </Button>
+          <Button size="sm" disabled={!transcription} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+            <Save className="w-4 h-4 mr-2" /> Save
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="p-6">
+        <Textarea
+          placeholder="English transcription will appear here..."
+          className="min-h-[300px] text-base resize-none border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent p-4 leading-relaxed"
+          value={transcription}
+          onChange={(e) => setTranscription(e.target.value)}
+        />
+        <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 p-3 bg-gray-50 rounded-xl border border-gray-200">
+          <span className="font-medium">{transcription.length} characters</span>
+          <span>•</span>
+          <span className="font-medium">{transcription.split(/\s+/).filter(Boolean).length} words</span>
+        </div>
+      </CardContent>
+    </Card>
+
+    {/* Urdu Transcription */}
+    <Card className="shadow-lg border-gray-200">
+      <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-white to-gray-50">
+        <div>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+              <FileText className="w-5 h-5 text-purple-600" />
+            </div>
+            Urdu Transcription — اردو
+          </CardTitle>
+          <CardDescription className="mt-2">
+            Speaker-separated Urdu output • Click to edit
+          </CardDescription>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-3">
+          <Button variant="outline" size="sm" onClick={handleCopyUrduTranscription} disabled={!urduTranscription} className="border-gray-300 hover:bg-gray-50">
+            <Copy className="w-4 h-4 mr-2" /> Copy
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleDownloadUrduTranscription} disabled={!urduTranscription} className="border-gray-300 hover:bg-gray-50">
+            <Download className="w-4 h-4 mr-2" /> Download
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleClearUrduTranscription} disabled={!urduTranscription} className="border-red-300 text-red-600 hover:bg-red-50">
+            <Trash2 className="w-4 h-4 mr-2" /> Clear
+          </Button>
+          <Button size="sm" disabled={!urduTranscription} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+            <Save className="w-4 h-4 mr-2" /> Save
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="p-6">
+        <Textarea
+          dir="rtl"
+          placeholder="اردو ٹرانسکرپشن یہاں ظاہر ہوگی..."
+          className="min-h-[300px] text-base resize-none border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent p-4 leading-relaxed text-right"
+          value={urduTranscription}
+          onChange={(e) => setUrduTranscription(e.target.value)}
+        />
+        <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 p-3 bg-gray-50 rounded-xl border border-gray-200">
+          <span className="font-medium">{urduTranscription.length} characters</span>
+          <span>•</span>
+          <span className="font-medium">{urduTranscription.split(/\s+/).filter(Boolean).length} words</span>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+
+  {/* RIGHT SIDE — Summary (English + Urdu) */}
+  <div className="space-y-4">
+    {/* English Summary */}
+    <Card className="shadow-lg border-gray-200">
+      <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-white to-emerald-50">
+        <div>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+              <FileText className="w-5 h-5 text-emerald-600" />
+            </div>
+            Consultation Summary — English
+          </CardTitle>
+          <CardDescription className="mt-2">
+            AI-generated summary of the consultation
+          </CardDescription>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!summary?.english}
+            onClick={() => navigator.clipboard.writeText(summary?.english || "")}
+            className="border-gray-300 hover:bg-gray-50"
+          >
+            <Copy className="w-4 h-4 mr-2" /> Copy
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!summary?.english}
+            onClick={() => {
+              const el = document.createElement("a");
+              el.href = URL.createObjectURL(new Blob([summary?.english || ""], { type: "text/plain" }));
+              el.download = `summary-english-${new Date().toISOString()}.txt`;
+              el.click();
+            }}
+            className="border-gray-300 hover:bg-gray-50"
+          >
+            <Download className="w-4 h-4 mr-2" /> Download
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="p-6">
+        {summary?.english ? (
+          <div className="min-h-[300px] p-4 bg-emerald-50 border-2 border-emerald-100 rounded-xl text-base leading-relaxed text-gray-800 whitespace-pre-wrap">
+            {summary.english}
+          </div>
+        ) : (
+          <div className="min-h-[300px] flex flex-col items-center justify-center text-center p-4 border-2 border-dashed border-gray-200 rounded-xl">
+            <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+              <FileText className="w-6 h-6 text-gray-400" />
+            </div>
+            <p className="text-gray-400 text-sm">
+              Summary will appear here after transcription
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+
+    {/* Urdu Summary */}
+    <Card className="shadow-lg border-gray-200">
+      <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-white to-amber-50">
+        <div>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+              <FileText className="w-5 h-5 text-amber-600" />
+            </div>
+            خلاصہ — اردو
+          </CardTitle>
+          <CardDescription className="mt-2">
+            مشاورت کا خلاصہ اردو میں
+          </CardDescription>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!summary?.urdu}
+            onClick={() => navigator.clipboard.writeText(summary?.urdu || "")}
+            className="border-gray-300 hover:bg-gray-50"
+          >
+            <Copy className="w-4 h-4 mr-2" /> Copy
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!summary?.urdu}
+            onClick={() => {
+              const el = document.createElement("a");
+              el.href = URL.createObjectURL(new Blob([summary?.urdu || ""], { type: "text/plain" }));
+              el.download = `summary-urdu-${new Date().toISOString()}.txt`;
+              el.click();
+            }}
+            className="border-gray-300 hover:bg-gray-50"
+          >
+            <Download className="w-4 h-4 mr-2" /> Download
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="p-6">
+        {summary?.urdu ? (
+          <div dir="rtl" className="min-h-[300px] p-4 bg-amber-50 border-2 border-amber-100 rounded-xl text-base leading-relaxed text-gray-800 whitespace-pre-wrap text-right">
+            {summary.urdu}
+          </div>
+        ) : (
+          <div className="min-h-[300px] flex flex-col items-center justify-center text-center p-4 border-2 border-dashed border-gray-200 rounded-xl">
+            <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+              <FileText className="w-6 h-6 text-gray-400" />
+            </div>
+            <p className="text-gray-400 text-sm">
+              خلاصہ ٹرانسکرپشن کے بعد یہاں ظاہر ہوگا
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  </div>
+</div>
       </div>
     </div>
   );
