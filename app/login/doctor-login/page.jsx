@@ -14,7 +14,7 @@ export default function DoctorLoginPage() {
   const [error, setError] = useState("");
 
   const router = useRouter();
-  const endpoint = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  const endpoint = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
