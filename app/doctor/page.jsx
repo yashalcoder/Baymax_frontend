@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { use } from "react";
 import Patients from "@/components/patients";
 import PatientsCards from "@/components/AssignedPatientsCard";
+import NotificationBell from "@/components/NotificationBell";
 
 const DoctorDashboard = () => {
 const [count,setCount]=useState(0);
