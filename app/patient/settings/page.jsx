@@ -6,7 +6,7 @@ import {
   Calendar, Users, CreditCard, Save, Edit2, Shield, Eye, EyeOff,
 } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 const getAge = (dob) => {

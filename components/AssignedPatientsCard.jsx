@@ -32,7 +32,8 @@ export default function PatientsPage() {
             console.error("No token found");
             return;
           }
-          const res = await fetch("http://localhost:5000/api/doctors/my-patients", {
+          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+          const res = await fetch(`${backendUrl}/api/doctors/my-patients`, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
