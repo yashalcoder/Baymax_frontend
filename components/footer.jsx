@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Logo from "@/public/bay.png";
 import { FlaskConical, Building2, Stethoscope, User, UserCog } from "lucide-react";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -77,13 +78,13 @@ export default function Footer() {
               { label: "Laboratory", icon: FlaskConical },
             ].map(({ label, icon: Icon }) => (
               <li key={label}>
-                <a
+                <Link
                   href="/signup"
                   className="flex items-center gap-2 text-white/50 hover:text-white transition-colors duration-200"
                 >
                   <Icon size={13} />
                   {label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -108,14 +109,14 @@ export default function Footer() {
           </ul>
 
           {/* CTA */}
-          <a
+          <Link
             href="/signup"
             className="inline-flex mt-6 px-5 py-2.5 rounded-xl font-black text-[#1b2d5e] text-sm bg-white
               hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200"
             style={{ fontFamily: "'Nunito', sans-serif" }}
           >
             Get Started →
-          </a>
+          </Link>
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import LayoutContent from "@/components/layout-content";
 import "./globals.css";
 import { Poppins, Inter } from "next/font/google";
 import { PatientProvider } from "@/components/Context/PatientContext";
+import NextTopLoader from "nextjs-toploader";
 const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700"],
   subsets: ["latin"],
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${poppins.variable} ${inter.variable}`}>
+        <NextTopLoader color="#1a73e8" showSpinner={false} height={3} shadow="0 0 10px #1a73e8,0 0 5px #1a73e8" />
         <SidebarProvider>
           <PatientProvider>
             <LayoutContent>{children}</LayoutContent>

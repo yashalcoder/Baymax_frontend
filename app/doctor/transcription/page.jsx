@@ -56,9 +56,16 @@ const Transcription = () => {
   const audioContextRef = useRef(null);
   // ------------------------------------
 
-  // Timer effect
-  const user = JSON.parse(localStorage.getItem("user"));
-  const doctorId =user.id;//user.id; lgna yaha ya srf testing k liye kr rha hun, jab signup/login wala flow bn jaye ga to yaha se doctor id le lunga
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        setUser(JSON.parse(stored));
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (isRecording && !isPaused) {
       timerRef.current = setInterval(() => {
@@ -238,9 +245,10 @@ const handleRemoveFile = () => {
       URL.revokeObjectURL(url);
     }
   };
- const token = localStorage.getItem("token");
+//  const token = localStorage.getItem("token");//removng from here and passing in below functio fro build erro
 
 const handleSendToWhisper = async () => {
+  const token = localStorage.getItem("token");
   if (!audioBlob && !uploadedFile) {
     Swal.fire({ title: "No Audio", text: "Please record audio first!", icon: "warning" });
     return;
