@@ -9,12 +9,15 @@ import {
 } from "@/components/ui/card";
 import { Search, User, Phone, Mail, Heart, Stethoscope, X, AlertCircle } from "lucide-react";
 
-// ─── Assign Doctor Modal ──────────────────────────────────────────────────────
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
+// ─── Assign Doctor Modal ──────────────────────────────────────────────────────
 function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
   const [doctorId,   setDoctorId]   = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // patient._id works for BOTH self-registered and assistant-added patients
+  // because assignDoctor backend accepts any Patient._id
   const handleAssign = async () => {
     if (!doctorId) {
       Swal.fire("Select Doctor", "Please choose a doctor first.", "warning");
@@ -22,8 +25,8 @@ function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
     }
     setSubmitting(true);
     try {
-      const res  = await fetch(
-        `http://localhost:5000/api/assistants/${patient._id}/assign-doctor`,
+      const res = await fetch(
+        `${API}/api/assistants/${patient._id}/assign-doctor`,
         {
           method:  "PUT",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -47,6 +50,9 @@ function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
     "w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm " +
     "focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white outline-none transition";
 
+  // Resolve patient name from either structure
+  const patientName = patient?.userId?.name || patient?.fullName || "Patient";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
@@ -54,13 +60,10 @@ function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
           <div>
             <h2 className="text-lg font-bold text-gray-900">Assign Doctor</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              Patient: <span className="font-medium">{patient?.userId?.name}</span>
+              Patient: <span className="font-medium">{patientName}</span>
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-400"
-          >
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-400">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -112,71 +115,61 @@ function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function SearchPatientsPage() {
-  const [token,   setToken]   = useState(null);
-  const [query,   setQuery]   = useState("");
-  const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState([]);
-  const [searched,setSearched]= useState(false);
-  const [doctors, setDoctors] = useState([]);
+  const [token,        setToken]        = useState(null);
+  const [query,        setQuery]        = useState("");
+  const [loading,      setLoading]      = useState(false);
+  const [results,      setResults]      = useState([]);
+  const [searched,     setSearched]     = useState(false);
+  const [doctors,      setDoctors]      = useState([]);
+  const [assignTarget, setAssignTarget] = useState(null);
 
-  // Modal state
-  const [assignTarget, setAssignTarget] = useState(null); // patient object or null
-const fetchInitialPatients = async (tkn = token) => {
-  if (!tkn) return;
-
-  try {
-    setLoading(true);
-    const res = await fetch(
-      `http://localhost:5000/api/patient/getPatients?limit=10`,
-      {
-        headers: { Authorization: `Bearer ${tkn}` },
-      }
-    );
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-
-    setResults(Array.isArray(data?.patients) ? data.patients : []);
-  } catch (err) {
-    console.error("Initial fetch error:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-useEffect(() => {
-  const t = localStorage.getItem("token");
-  setToken(t);
-  if (!t) return;
-
-  // ✅ ADD THIS LINE
-  fetchInitialPatients(t);
-
-  // existing doctor fetch (keep same)
-  fetch("http://localhost:5000/api/assistants/doctors", {
-    headers: { Authorization: `Bearer ${t}` },
-  })
-    .then((r) => r.json())
-    .then((d) => setDoctors(Array.isArray(d?.data) ? d.data : []))
-    .catch(() => setDoctors([]));
-}, []);
+  // ── On mount: load token + doctors + ALL patients (including self-registered)
   useEffect(() => {
     const t = localStorage.getItem("token");
     setToken(t);
     if (!t) return;
 
-    // Pre-load doctors for the assign modal
-    fetch("http://localhost:5000/api/assistants/doctors", {
+    // Load doctors for the assign modal
+    fetch(`${API}/api/assistants/doctors`, {
       headers: { Authorization: `Bearer ${t}` },
     })
       .then((r) => r.json())
       .then((d) => setDoctors(Array.isArray(d?.data) ? d.data : []))
       .catch(() => setDoctors([]));
+
+    // Load ALL patients via search with empty-ish query won't work,
+    // so load using the assistant's search with a broad term, OR
+    // use the correct getAllPatients endpoint
+    fetchAllPatients(t);
   }, []);
 
+  // ── Fetch ALL patients (self-registered + assistant-added) ────────────────
+  const fetchAllPatients = async (tkn) => {
+    try {
+      setLoading(true);
+      // Use assistants/search with a space to get broad results,
+      // OR use the proper search endpoint with no query for initial load
+      const res = await fetch(
+        `${API}/api/assistants/all-patients`,
+        { headers: { Authorization: `Bearer ${tkn}` } }
+      );
+      const data = await res.json();
+      if (res.ok && Array.isArray(data?.data)) {
+        setResults(data.data);
+      }
+    } catch (err) {
+      console.error("Initial patients fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Search patients ───────────────────────────────────────────────────────
   const doSearch = async (tkn = token) => {
     const q = query.trim();
     if (!q) {
-      Swal.fire("Empty Search", "Type a name, email, or phone number.", "warning");
+      // If empty query, reload all patients
+      fetchAllPatients(tkn);
       return;
     }
     if (!tkn) {
@@ -188,7 +181,7 @@ useEffect(() => {
       setLoading(true);
       setSearched(true);
       const res  = await fetch(
-        `http://localhost:5000/api/assistants/search?query=${encodeURIComponent(q)}`,
+        `${API}/api/assistants/search?query=${encodeURIComponent(q)}`,
         { headers: { Authorization: `Bearer ${tkn}` } }
       );
       const data = await res.json();
@@ -202,13 +195,18 @@ useEffect(() => {
     }
   };
 
-  // After a doctor is assigned, refresh results so the badge updates
-  const handleAssigned = () => doSearch();
+  const handleAssigned = () => {
+    // Refresh results after assignment
+    if (query.trim()) {
+      doSearch();
+    } else {
+      fetchAllPatients(token);
+    }
+  };
 
   return (
     <ProtectedRoute allowedRoles={["assistant"]}>
 
-      {/* Assign Doctor Modal */}
       {assignTarget && (
         <AssignDoctorModal
           patient={assignTarget}
@@ -237,8 +235,7 @@ useEffect(() => {
                 <Search className="w-5 h-5" /> Patient Lookup
               </CardTitle>
               <CardDescription>
-                Search by name, email address, or phone number.
-                You can also assign a doctor or record vitals from the results.
+                Search by name, email address, or phone number — includes self-registered patients.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-5">
@@ -254,6 +251,11 @@ useEffect(() => {
                     placeholder="e.g. Ahmed / ahmed@email.com / 03XX-XXXXXXX"
                     className="flex-1 outline-none text-sm bg-transparent"
                   />
+                  {query && (
+                    <button onClick={() => { setQuery(""); fetchAllPatients(token); }}>
+                      <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -265,9 +267,8 @@ useEffect(() => {
                 </button>
               </div>
 
-              {/* States */}
               {loading && (
-                <div className="py-10 text-center text-sm text-gray-400">Searching…</div>
+                <div className="py-10 text-center text-sm text-gray-400">Loading patients…</div>
               )}
 
               {!loading && searched && results.length === 0 && (
@@ -277,26 +278,22 @@ useEffect(() => {
                 </div>
               )}
 
-              {!loading && !searched && results.length===0 && (
-                <div className="py-10 text-center">
-                  <Search className="w-10 h-10 text-gray-200 mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">Enter a search query above to find patients</p>
-                </div>
-              )}
-
               {/* Results */}
               {!loading && results.length > 0 && (
                 <div className="space-y-3">
                   <p className="text-xs text-gray-500">
-                    {results.length} result{results.length !== 1 ? "s" : ""} found
+                    {results.length} patient{results.length !== 1 ? "s" : ""} found
                   </p>
                   {results.map((p) => {
-                    // Resolve current doctor name from populated assignedDoctor
-                    const doc = p.assignedDoctor;
+                    const doc     = p.assignedDoctor;
                     const docName = doc
-                      ? ((doc.firstName || "") + " " + (doc.lastName || "")).trim() ||
-                        "Assigned"
+                      ? ((doc.firstName || "") + " " + (doc.lastName || "")).trim() || "Assigned"
                       : null;
+
+                    // Handle both self-registered (userId.name) and assistant-added (fullName)
+                    const name    = p?.userId?.name || p?.fullName || "Patient";
+                    const email   = p?.userId?.email || p?.email || "—";
+                    const contact = p?.userId?.contact || p?.contact || "—";
 
                     return (
                       <div
@@ -310,15 +307,21 @@ useEffect(() => {
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-gray-900">
-                            {p?.userId?.name || "Patient"}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-gray-900">{name}</p>
+                            {/* Badge: self-registered vs assistant-added */}
+                            {!p.assignedByAssistant && (
+                              <span className="text-xs bg-purple-50 text-purple-600 border border-purple-100 rounded-full px-2 py-0.5">
+                                Self-registered
+                              </span>
+                            )}
+                          </div>
                           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
                             <span className="flex items-center gap-1 text-xs text-gray-500">
-                              <Mail className="w-3 h-3" />{p?.userId?.email || "—"}
+                              <Mail className="w-3 h-3" />{email}
                             </span>
                             <span className="flex items-center gap-1 text-xs text-gray-500">
-                              <Phone className="w-3 h-3" />{p?.userId?.contact || "—"}
+                              <Phone className="w-3 h-3" />{contact}
                             </span>
                           </div>
 
@@ -338,7 +341,6 @@ useEffect(() => {
 
                         {/* Actions */}
                         <div className="flex flex-wrap gap-2 flex-shrink-0">
-                          {/* Assign / Reassign Doctor */}
                           <button
                             type="button"
                             onClick={() => setAssignTarget(p)}
@@ -348,7 +350,6 @@ useEffect(() => {
                             {docName ? "Reassign Doctor" : "Assign Doctor"}
                           </button>
 
-                          {/* Take Vitals */}
                           <Link
                             href={`/assistant/vitals?patientId=${p._id}`}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-50 text-rose-700 border border-rose-100 hover:bg-rose-100 transition"

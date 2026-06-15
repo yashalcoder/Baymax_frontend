@@ -5,6 +5,8 @@ import Link from "next/link";
 import ProtectedRoute from "@/components/protectedRoutes";
 import { Users, Activity, UserPlus, Search, Settings, Heart } from "lucide-react";
 
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 export default function AssistantDashboard() {
   const user = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("user") || "{}"); } catch { return {}; }
@@ -15,7 +17,7 @@ export default function AssistantDashboard() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    fetch("http://localhost:5000/api/auth/profile", {
+    fetch(`${API}/api/auth/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
