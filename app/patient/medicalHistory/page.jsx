@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import {
   FileText,
@@ -26,9 +27,20 @@ import {
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// OCR Result Modal
+// OCR Result Modal Component
 // ─────────────────────────────────────────────────────────────────────────────
 function OcrResultModal({ result, onClose }) {
+  const [showRaw, setShowRaw] = useState(false);
+
+  // Close modal on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   const sections = [
     {
       key: "diagnoses",
@@ -72,8 +84,6 @@ function OcrResultModal({ result, onClose }) {
     },
   ];
 
-  const [showRaw, setShowRaw] = useState(false);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
@@ -82,7 +92,7 @@ function OcrResultModal({ result, onClose }) {
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {/* Modal Card */}
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-5 text-white flex items-center justify-between flex-shrink-0">
@@ -105,7 +115,7 @@ function OcrResultModal({ result, onClose }) {
           </button>
         </div>
 
-        {/* Success banner */}
+        {/* Success Banner */}
         <div className="bg-green-50 border-b border-green-100 px-5 py-3 flex items-center gap-2 flex-shrink-0">
           <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
           <p className="text-sm text-green-700 font-medium">
@@ -113,7 +123,7 @@ function OcrResultModal({ result, onClose }) {
           </p>
         </div>
 
-        {/* Scrollable content */}
+        {/* Scrollable Body Content */}
         <div className="overflow-y-auto flex-1 p-5 space-y-4">
           {sections.map((s) => {
             const items = result?.[s.key] || [];
@@ -123,7 +133,7 @@ function OcrResultModal({ result, onClose }) {
                 key={s.key}
                 className={`${s.bg} ${s.border} border rounded-xl p-4`}
               >
-                <p
+                <div
                   className={`text-xs font-bold uppercase tracking-wider ${s.text} mb-3 flex items-center gap-1.5`}
                 >
                   {s.icon}
@@ -133,11 +143,11 @@ function OcrResultModal({ result, onClose }) {
                   >
                     {items.length}
                   </span>
-                </p>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {items.map((item, i) => (
                     <span
-                      key={i}
+                      key={`${s.key}-${i}`}
                       className={`text-sm px-3 py-1 rounded-full font-medium border ${s.badge} ${s.border}`}
                     >
                       {item}
@@ -148,7 +158,7 @@ function OcrResultModal({ result, onClose }) {
             );
           })}
 
-          {/* Raw extracted text (collapsible) */}
+          {/* Raw Extracted Text (Collapsible Section) */}
           {result?.extracted_text && (
             <div className="border border-gray-200 rounded-xl overflow-hidden">
               <button
@@ -191,7 +201,7 @@ function OcrResultModal({ result, onClose }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// OCR Upload Modal
+// OCR Upload Modal Component
 // ─────────────────────────────────────────────────────────────────────────────
 function OcrUploadModal({ patientId, onClose, onSuccess }) {
   const [file, setFile] = useState(null);
@@ -201,6 +211,15 @@ function OcrUploadModal({ patientId, onClose, onSuccess }) {
   const fileInputRef = useRef(null);
 
   const ACCEPTED = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+
+  // Close modal on Escape key press (unless actively uploading)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && !uploading) onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, uploading]);
 
   const handleFile = (f) => {
     if (!ACCEPTED.includes(f.type)) {
@@ -220,9 +239,7 @@ function OcrUploadModal({ patientId, onClose, onSuccess }) {
   const handleSubmit = async () => {
     if (!file) return;
     if (!patientId) {
-      alert(
-        "Patient ID not found. Please refresh the page or log out and back in."
-      );
+      alert("Patient ID not found. Please refresh the page or log out and back in.");
       return;
     }
 
@@ -232,7 +249,7 @@ function OcrUploadModal({ patientId, onClose, onSuccess }) {
     try {
       const token = localStorage.getItem("token");
       const formData = new FormData();
-      formData.append("image", file); // backend expects field name "image"
+      formData.append("image", file); // Backend targets field name "image"
       formData.append("patientId", patientId);
 
       setStep("extracting");
@@ -298,7 +315,7 @@ function OcrUploadModal({ patientId, onClose, onSuccess }) {
         </div>
 
         <div className="p-6 space-y-4">
-          {/* Drop zone */}
+          {/* Drop Zone Box */}
           <div
             onDragOver={(e) => {
               e.preventDefault();
@@ -361,7 +378,7 @@ function OcrUploadModal({ patientId, onClose, onSuccess }) {
             )}
           </div>
 
-          {/* Progress indicator */}
+          {/* Progress Indicator Row */}
           {uploading && (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
               <Loader2 className="w-5 h-5 text-blue-600 animate-spin flex-shrink-0" />
@@ -379,7 +396,6 @@ function OcrUploadModal({ patientId, onClose, onSuccess }) {
             </div>
           )}
 
-          {/* Info note */}
           {!uploading && (
             <p className="text-xs text-gray-400 text-center">
               Your report will be scanned with OCR and analyzed by AI to extract
@@ -387,7 +403,7 @@ function OcrUploadModal({ patientId, onClose, onSuccess }) {
             </p>
           )}
 
-          {/* Action buttons */}
+          {/* Buttons Control Footer */}
           <div className="flex gap-3 pt-1">
             {!uploading && (
               <button
@@ -422,7 +438,7 @@ function OcrUploadModal({ patientId, onClose, onSuccess }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Main Page
+// Main Medical History Page Component
 // ─────────────────────────────────────────────────────────────────────────────
 export default function MedicalHistoryPage() {
   const [history, setHistory] = useState([]);
@@ -430,35 +446,39 @@ export default function MedicalHistoryPage() {
   const [error, setError] = useState(null);
   const [exporting, setExporting] = useState(false);
 
-  // OCR state
+  // OCR state hooks
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [ocrResult, setOcrResult] = useState(null);
   const [patientId, setPatientId] = useState(null);
 
-  // Fetch medical history + resolve patientId
+  // Trigger main profile & data fetches on component mount
   useEffect(() => {
-    const fetchHistory = async () => {
+    const fetchHistoryData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          setError("Not authenticated.");
+          setError("Not authenticated. Please log in.");
           setLoading(false);
           return;
         }
 
-        // ── Resolve patientId from dashboard ──────────────────────────────
-        // We fetch the dashboard once to get the patient._id for OCR uploads
+        // 1. Resolve patient profile tracking ID from active session dashboard
         const dashRes = await fetch(`${API}/api/patient/dashboard`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (dashRes.ok) {
-          const dashData = await dashRes.json();
-          if (dashData?.patient?._id) {
-            setPatientId(dashData.patient._id);
-          }
+
+        if (!dashRes.ok) {
+          setError("Session invalid or expired. Please re-authenticate.");
+          setLoading(false);
+          return;
         }
 
-        // ── Fetch medical history ─────────────────────────────────────────
+        const dashData = await dashRes.json();
+        if (dashData?.patient?._id) {
+          setPatientId(dashData.patient._id);
+        }
+
+        // 2. Load primary historical timeline logs
         const res = await fetch(`${API}/api/patient/my-medical-history`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -471,14 +491,16 @@ export default function MedicalHistoryPage() {
         }
         setHistory(data.data || []);
       } catch {
-        setError("Could not connect to server.");
+        setError("Could not connect to the server. Please verify connections.");
       } finally {
         setLoading(false);
       }
     };
-    fetchHistory();
+
+    fetchHistoryData();
   }, []);
 
+  // Handler execution sequence logic triggers a file payload retrieval stream
   const handleExportPDF = async () => {
     setExporting(true);
     try {
@@ -489,22 +511,22 @@ export default function MedicalHistoryPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        alert(data.message || "Failed to export medical history.");
+        alert(data.message || "Failed to export medical history summary.");
         return;
       }
 
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "medical-history.pdf";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      const linkElement = document.createElement("a");
+      linkElement.href = url;
+      linkElement.download = "medical-history.pdf";
+      document.body.appendChild(linkElement);
+      linkElement.click();
+      linkElement.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Export error:", err);
-      alert("Could not export medical history.");
+      console.error("PDF generation export error structure log:", err);
+      alert("Could not trigger internal export processing engine.");
     } finally {
       setExporting(false);
     }
@@ -513,19 +535,21 @@ export default function MedicalHistoryPage() {
   const handleOcrSuccess = (data) => {
     setShowUploadModal(false);
     setOcrResult(data);
+    // Optional: Re-fetch history timeline dynamically here to append new items automatically
   };
 
-  if (loading)
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-blue-600">
           <Loader2 className="w-10 h-10 animate-spin" />
-          <p className="text-lg font-medium">Loading medical history…</p>
+          <p className="text-lg font-medium">Loading medical history records…</p>
         </div>
       </div>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-red-500">
@@ -534,10 +558,11 @@ export default function MedicalHistoryPage() {
         </div>
       </div>
     );
+  }
 
   return (
     <>
-      {/* ── Modals ─────────────────────────────────────────────────────────── */}
+      {/* ── Action Trigger Interfaces and Modal Components ── */}
       {showUploadModal && (
         <OcrUploadModal
           patientId={patientId}
@@ -553,29 +578,26 @@ export default function MedicalHistoryPage() {
         />
       )}
 
-      {/* ── Page ───────────────────────────────────────────────────────────── */}
+      {/* ── Main Scaffold Wrapper ── */}
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-8">
         <div className="max-w-4xl mx-auto space-y-6">
 
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-600 text-white rounded-2xl p-6 shadow-lg">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-wrap">
+          {/* Main Top Brand Banner Row (Flex Layout Fixed) */}
+          <div className="bg-hero-gradient bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-6 shadow-lg">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 rounded-lg">
+                <div className="p-3 bg-white/20 rounded-lg flex-shrink-0">
                   <FileText className="w-8 h-8" />
                 </div>
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold">
-                    Medical History
-                  </h1>
+                  <h1 className="text-2xl md:text-3xl font-bold">Medical History</h1>
                   <p className="text-blue-100 text-sm">
-                    Your complete visit and diagnosis records
+                    Your complete visit logs, prescriptions, and diagnostic records
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-row flex-wrap gap-2 sm:gap-3 items-center">
-                {/* ── Import Report (OCR) button ─────────────────────────── */}
                 <button
                   onClick={() => setShowUploadModal(true)}
                   className="flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 border border-white/40 text-white font-semibold rounded-xl shadow transition-all text-sm whitespace-nowrap"
@@ -584,7 +606,6 @@ export default function MedicalHistoryPage() {
                   Import Report
                 </button>
 
-                {/* ── Export Full PDF button ─────────────────────────────── */}
                 <button
                   onClick={handleExportPDF}
                   disabled={exporting}
@@ -592,11 +613,13 @@ export default function MedicalHistoryPage() {
                 >
                   {exporting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> Exporting…
+                      <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                      Exporting…
                     </>
                   ) : (
                     <>
-                      <Download className="w-4 h-4 flex-shrink-0" /> Export PDF
+                      <Download className="w-4 h-4 flex-shrink-0" />
+                      Export PDF
                     </>
                   )}
                 </button>
@@ -604,37 +627,37 @@ export default function MedicalHistoryPage() {
             </div>
           </div>
 
-          {/* Empty state */}
+          {/* Empty Core Record State UI View */}
           {history.length === 0 && (
             <div className="bg-white rounded-xl shadow border p-16 text-center">
               <Stethoscope className="w-20 h-20 text-gray-200 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                No Records Yet
+                No Records Found Yet
               </h3>
               <p className="text-gray-400 mb-6">
-                Your doctor hasn&apos;t added any visit records yet.
+                Your medical dashboard doesn&apos;t contain verified visit records or diagnostic charts yet.
               </p>
               <button
                 onClick={() => setShowUploadModal(true)}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-sm"
               >
                 <Upload className="w-4 h-4" />
-                Import a Report
+                Import your first Report
               </button>
             </div>
           )}
 
-          {/* History cards */}
+          {/* Chronological List Item Logs Loop Grid */}
           <div className="space-y-4">
             {history.map((record) => (
               <div
                 key={record._id}
                 className="bg-white rounded-xl shadow border hover:shadow-md transition-all p-6"
               >
-                {/* Visit header */}
+                {/* Individual Visit Row Summary Entry Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-4 border-b">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
+                    <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
                       <Stethoscope className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
@@ -656,7 +679,7 @@ export default function MedicalHistoryPage() {
                   </span>
                 </div>
 
-                {/* Prescriptions */}
+                {/* Sub-block Sections: Treatment Prescriptions */}
                 {record.prescriptions?.length > 0 && (
                   <div className="mb-4">
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1">
@@ -665,7 +688,7 @@ export default function MedicalHistoryPage() {
                     <div className="flex flex-wrap gap-2">
                       {record.prescriptions.map((p, i) => (
                         <span
-                          key={i}
+                          key={`prescription-${record._id}-${i}`}
                           className="text-sm px-3 py-1 bg-blue-50 border border-blue-100 text-blue-700 rounded-full font-medium"
                         >
                           {p.medicineName} — {p.dosage}, {p.duration}
@@ -675,27 +698,26 @@ export default function MedicalHistoryPage() {
                   </div>
                 )}
 
-                {/* Lab Tests */}
+                {/* Lab Diagnostics Result Blocks */}
                 {record.labTests?.length > 0 && (
                   <div className="mb-4">
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1">
-                      <FlaskConical className="w-3.5 h-3.5" /> Lab Tests
+                      <FlaskConical className="w-3.5 h-3.5" /> Lab Tests & Diagnostics
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {record.labTests.map((t, i) => (
                         <span
-                          key={i}
+                          key={`lab-${record._id}-${i}`}
                           className="text-sm px-3 py-1 bg-yellow-50 border border-yellow-100 text-yellow-700 rounded-full font-medium"
                         >
-                          {t.testName}: {t.result || "Pending"} (Normal:{" "}
-                          {t.normalRange || "N/A"})
+                          {t.testName}: {t.result || "Pending"} (Normal: {t.normalRange || "N/A"})
                         </span>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Notes */}
+                {/* Clinical Notes Summary Section */}
                 {record.notes && (
                   <p className="text-sm text-gray-600 bg-gray-50 rounded-lg px-4 py-2 border-l-4 border-blue-300">
                     <span className="font-semibold text-gray-700">Notes: </span>
@@ -705,6 +727,7 @@ export default function MedicalHistoryPage() {
               </div>
             ))}
           </div>
+
         </div>
       </div>
     </>
