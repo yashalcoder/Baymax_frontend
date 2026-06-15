@@ -22,12 +22,12 @@ export default function PharmacySettingsPage() {
     newPassword: "",
     confirmPassword: "",
   })
-
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   useEffect(() => {
     async function loadProfile() {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/pharmacy/profile`,
+          `${API}/api/pharmacy/profile`,
           {
             method: "GET",
             headers: {
@@ -93,7 +93,7 @@ export default function PharmacySettingsPage() {
     try {
       setErrorMsg("")
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/pharmacy/profile/location`,
+        `${API}/api/pharmacy/profile/location`,
         {
           method: "PATCH",
           headers: {

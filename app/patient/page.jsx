@@ -28,8 +28,8 @@ const PatientDashboard = () => {
           return
         }
 
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
-        const res = await fetch(`${backendUrl}/api/patient/dashboard`, {
+        const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await fetch(`${API}/api/patient/dashboard`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,

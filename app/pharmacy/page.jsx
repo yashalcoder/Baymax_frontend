@@ -16,6 +16,7 @@ const PharmacyDashboard = () => {
   const [medicines, setMedicines] = useState([]);
   const [pharmacyName, setPharmacyName] = useState("Pharmacy User");
   const [loading, setLoading] = useState(true);
+  const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     async function fetchData() {
@@ -23,7 +24,7 @@ const PharmacyDashboard = () => {
       console.log("Pharmacy ",token)
       try {
         const medicinesRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/pharmacy/medicines`,
+          `${API}/api/pharmacy/medicines`,
           {
             method: "GET",
             headers: {
@@ -38,7 +39,7 @@ const PharmacyDashboard = () => {
         }
 
         const profileRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/pharmacy/profile`,
+          `${API}/api/pharmacy/profile`,
           {
             method: "GET",
             headers: {
