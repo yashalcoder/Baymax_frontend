@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -27,6 +28,15 @@ function NearMeModal({ onClose, laboratories }) {
   const leafletMapRef = useRef(null);
   const [status, setStatus] = useState("locating");
 
+  // Dismiss modal on Escape key down
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   useEffect(() => {
     if (!navigator.geolocation) { setStatus("denied"); return; }
     navigator.geolocation.getCurrentPosition(
@@ -44,7 +54,7 @@ function NearMeModal({ onClose, laboratories }) {
       document.head.appendChild(link);
     }
     const buildMap = () => {
-      if (leafletMapRef.current) return;
+      if (leafletMapRef.current || !mapRef.current) return;
       const L = window.L;
       const map = L.map(mapRef.current).setView([userLat, userLng], 13);
       leafletMapRef.current = map;
@@ -54,14 +64,14 @@ function NearMeModal({ onClose, laboratories }) {
       L.marker([userLat, userLng], {
         icon: L.divIcon({
           className: "",
-          html: `<div style="width:18px;height:18px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>`,
+          html: `<div style="width:18px;height:18px;background:#2563eb;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.2)"></div>`,
           iconSize: [18, 18], iconAnchor: [9, 9],
         }),
       }).addTo(map).bindPopup("<b>📍 Your Location</b>").openPopup();
 
       const labIcon = L.divIcon({
         className: "",
-        html: `<div style="width:34px;height:34px;background:#7c3aed;border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.35);font-size:16px">🔬</div>`,
+        html: `<div style="width:34px;height:34px;background:#2563eb;border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.15);font-size:16px">🔬</div>`,
         iconSize: [34, 34], iconAnchor: [17, 17],
       });
       laboratories.filter(l => l.location?.lat && l.location?.lng).forEach(lab => {
@@ -71,10 +81,10 @@ function NearMeModal({ onClose, laboratories }) {
           .bindPopup(`<div style="min-width:180px;font-family:sans-serif;line-height:1.6">
             <strong style="font-size:14px">${lab.labName}</strong><br/>
             ${lab.address ? `<span style="color:#6b7280;font-size:12px">${lab.address}</span><br/>` : ""}
-            <span style="color:#7c3aed;font-weight:700;font-size:13px">📍 ${dist} km away</span>
+            <span style="color:#2563eb;font-weight:700;font-size:13px">📍 ${dist} km away</span>
             ${lab.phone ? `<br/><span style="font-size:12px">📞 ${lab.phone}</span>` : ""}
-            ${lab.homeCollection ? `<br/><span style="color:#059669;font-size:12px;font-weight:600">🏠 Home Collection</span>` : ""}
-            ${lab.rating ? `<br/><span style="color:#f59e0b;font-size:12px">⭐ ${lab.rating}</span>` : ""}
+            ${lab.homeCollection ? `<br/><span style="color:#16a34a;font-size:12px;font-weight:600">🏠 Home Collection</span>` : ""}
+            ${lab.rating ? `<br/><span style="color:#d97706;font-size:12px">⭐ ${lab.rating}</span>` : ""}
           </div>`);
       });
       setStatus("ready");
@@ -90,25 +100,28 @@ function NearMeModal({ onClose, laboratories }) {
   useEffect(() => () => { leafletMapRef.current?.remove(); leafletMapRef.current = null; }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <Navigation className="w-5 h-5 text-blue-600" /> Laboratories Near You
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl flex flex-col overflow-hidden border border-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <Navigation className="w-4 h-4 text-blue-600" /> Laboratories Near You
           </h2>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
         </div>
         <div className="relative" style={{ height: 460 }}>
           {status === "locating" && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-blue-600 bg-white z-10">
-              <Loader2 className="w-10 h-10 animate-spin" />
-              <p className="font-medium">Detecting your location…</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-500 bg-white z-10">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <p className="text-sm font-medium">Detecting your location…</p>
             </div>
           )}
           {status === "denied" && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white z-10 p-8 text-center">
-              <AlertCircle className="w-12 h-12 text-red-500" />
-              <p className="font-semibold text-lg text-red-600">Location Access Denied</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white z-10 p-8 text-center">
+              <AlertCircle className="w-10 h-10 text-red-500" />
+              <p className="font-medium text-gray-900">Location Access Denied</p>
+              <p className="text-xs text-gray-500">Please enable location permissions in your browser.</p>
             </div>
           )}
           <div ref={mapRef} className="w-full h-full" />
@@ -130,29 +143,29 @@ function TestRow({ testName, labTests, lab }) {
   const getFinalPrice = (p, discount = 0) => Math.round(p - (p * discount) / 100);
 
   return (
-    <div className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm ${offered ? "bg-blue-50 border border-blue-200" : "bg-red-50 border border-red-200"
+    <div className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs border ${offered ? "bg-blue-50/50 border-blue-100 text-blue-900" : "bg-red-50/50 border-red-100 text-red-900"
       }`}>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         {offered
-          ? <CheckCircle className="w-4 h-4 text-blue-600 shrink-0" />
-          : <XCircle className="w-4 h-4 text-red-500 shrink-0" />}
-        <span className={`font-medium ${offered ? "text-blue-800" : "text-red-700"}`}>
-          {testName}
-        </span>
+          ? <CheckCircle className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+          : <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />}
+        <span className="font-medium truncate">{testName}</span>
       </div>
-      {offered
-        ? <div className="flex items-center gap-1.5 shrink-0">
+      {offered ? (
+        <div className="flex items-center gap-1.5 shrink-0">
           {(lab.discount || 0) > 0 && (
-            <span className="text-xs text-red-400 line-through">Rs. {price}</span>
+            <span className="text-[10px] text-gray-400 line-through">Rs. {price}</span>
           )}
-          <span className="font-bold text-blue-700">
+          <span className="font-semibold text-blue-700">
             Rs. {getFinalPrice(price, lab.discount)}
           </span>
           {(lab.discount || 0) > 0 && (
-            <span className="text-xs text-green-600 font-semibold">{lab.discount}% off</span>
+            <span className="text-[10px] text-green-600 font-medium">({lab.discount}% off)</span>
           )}
         </div>
-        : <span className="text-red-500 font-medium shrink-0 text-xs">Not Available</span>}
+      ) : (
+        <span className="text-red-500 font-medium shrink-0 text-[11px]">Not Available</span>
+      )}
     </div>
   );
 }
@@ -162,7 +175,9 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
   const [expanded, setExpanded] = useState(rank === 0);
 
   const availableCount = prescribedTests.filter(test => {
-    const matched = labTests.find(t => t.name?.toLowerCase() === test.toLowerCase());
+    const matched = labTests.find(
+      t => t.name?.toLowerCase() === test.toLowerCase()
+    );
     const testId = matched?._id || matched?.id;
     return testId && lab.prices?.[testId] != null;
   }).length;
@@ -172,59 +187,59 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
   const dist = distanceLabel(lab);
 
   return (
-    <div className={`bg-white rounded-xl shadow-md border-2 transition-all hover:shadow-lg ${rank === 0 && hasPrescription
-        ? "border-blue-500 ring-4 ring-blue-100"
-        : "border-gray-200 hover:border-blue-300"
+    <div className={`bg-white rounded-xl border transition-all duration-200 ${rank === 0 && hasPrescription
+      ? "border-blue-500 shadow-sm ring-1 ring-blue-500"
+      : "border-gray-200 hover:border-gray-300 shadow-sm"
       }`}>
       {rank === 0 && hasPrescription && (
-        <div className="px-5 pt-4">
-          <span className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
-            <CheckCircle className="w-3 h-3" /> Best Match — Most Tests Available
+        <div className="px-4 pt-3.5">
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md border border-blue-100">
+            <CheckCircle className="w-3 h-3" /> Best Match
           </span>
         </div>
       )}
 
-      <div className="p-5">
+      <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="p-2 bg-blue-100 rounded-lg shrink-0">
-              <Beaker className="w-5 h-5 text-blue-600" />
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="p-2 bg-gray-50 border border-gray-100 rounded-lg shrink-0 mt-0.5">
+              <Beaker className="w-4 h-4 text-gray-600" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-gray-900 text-lg leading-tight">{lab.labName}</h3>
+              <h3 className="font-semibold text-gray-900 text-base leading-tight truncate">{lab.labName}</h3>
               {lab.address && (
-                <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-                  <MapPin className="w-3.5 h-3.5 shrink-0" />
+                <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                  <MapPin className="w-3 h-3 shrink-0 text-gray-400" />
                   <span className="truncate">{lab.address}</span>
                 </p>
               )}
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
-            {dist && <span className="text-xs font-bold text-blue-600">📍 {dist}</span>}
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            {dist && <span className="text-xs font-medium text-blue-600 bg-blue-50/50 px-2 py-0.5 rounded">📍 {dist}</span>}
             {lab.rating && (
-              <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold">
-                <Star className="w-3 h-3 inline mr-0.5" />{lab.rating}
+              <span className="text-[11px] text-amber-700 font-medium flex items-center gap-0.5">
+                <Star className="w-3 h-3 fill-amber-400 text-amber-400" /> {lab.rating}
               </span>
             )}
           </div>
         </div>
 
         {/* Meta badges */}
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-1.5 mb-3">
           {lab.homeCollection && (
-            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
+            <span className="bg-gray-50 border border-gray-100 text-gray-700 px-2.5 py-0.5 rounded-md text-[11px] font-medium">
               🏠 Home Collection
             </span>
           )}
           {lab.reportTime && (
-            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
-              <Clock className="w-3 h-3 inline mr-1" />{lab.reportTime}
+            <span className="bg-gray-50 border border-gray-100 text-gray-700 px-2.5 py-0.5 rounded-md text-[11px] font-medium flex items-center gap-1">
+              <Clock className="w-3 h-3 text-gray-400" /> {lab.reportTime}
             </span>
           )}
           {lab.openHours && (
-            <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs">
+            <span className="bg-gray-50 border border-gray-100 text-gray-500 px-2.5 py-0.5 rounded-md text-[11px]">
               🕐 {lab.openHours}
             </span>
           )}
@@ -232,18 +247,10 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
 
         {/* Coverage summary */}
         {hasPrescription && (
-          <div className={`mb-3 px-4 py-2.5 rounded-lg border flex items-center justify-between ${availableCount === totalCount
-              ? "bg-blue-50 border-blue-200"
-              : availableCount > 0
-                ? "bg-yellow-50 border-yellow-200"
-                : "bg-red-50 border-red-200"
+          <div className={`mb-3 px-3 py-2 rounded-lg border flex items-center justify-between text-xs ${availableCount === totalCount ? "bg-blue-50/30 border-blue-100" : availableCount > 0 ? "bg-amber-50/30 border-amber-100" : "bg-red-50/30 border-red-100"
             }`}>
-            <span className="text-sm font-semibold text-gray-700">Prescription Coverage</span>
-            <span className={`text-sm font-bold ${availableCount === totalCount
-                ? "text-blue-700"
-                : availableCount > 0
-                  ? "text-yellow-700"
-                  : "text-red-600"
+            <span className="font-medium text-gray-600">Prescription Coverage</span>
+            <span className={`font-semibold ${availableCount === totalCount ? "text-blue-700" : availableCount > 0 ? "text-amber-700" : "text-red-600"
               }`}>
               {availableCount} / {totalCount} tests
             </span>
@@ -255,10 +262,10 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
           <>
             <button
               onClick={() => setExpanded(!expanded)}
-              className="w-full flex items-center justify-between text-sm font-medium text-gray-600 hover:text-blue-700 transition-colors py-1 mb-2"
+              className="w-full flex items-center justify-between text-xs font-medium text-gray-500 hover:text-blue-600 transition-colors py-1 mb-2"
             >
               <span>Test Availability & Prices</span>
-              {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
             {expanded && (
               <div className="space-y-1.5 mb-3">
@@ -271,21 +278,21 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
         )}
 
         {/* Action buttons */}
-        <div className="flex gap-2 pt-2 border-t mt-2">
+        <div className="flex gap-2 pt-2 border-t border-gray-100 mt-2">
           {lab.phone && (
             <a
               href={`tel:${lab.phone}`}
-              className="flex-1 py-2 border border-gray-300 rounded-lg text-sm text-center hover:bg-gray-50 flex items-center justify-center gap-1 transition-colors"
+              className="flex-1 py-1.5 border border-gray-200 text-gray-700 rounded-lg text-xs font-medium text-center hover:bg-gray-50 flex items-center justify-center gap-1 transition-colors"
             >
-              <Phone className="w-3.5 h-3.5" /> Call
+              <Phone className="w-3.5 h-3.5 text-gray-400" /> Call
             </a>
           )}
           {lab.location?.lat && (
             <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${lab.location.lat},${lab.location.lng}`}
+              href={`https://www.google.com/maps/search/?api=1&query=${lab.location.lat},${lab.location.lng}`}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm text-center flex items-center justify-center gap-1 transition-colors"
+              className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium text-center flex items-center justify-center gap-1 transition-colors"
             >
               <Navigation className="w-3.5 h-3.5" /> Directions
             </a>
@@ -298,9 +305,9 @@ function LabCard({ lab, prescribedTests, labTests, distanceLabel, rank }) {
 
 // ─── Test type config ────────────────────────────────────────────────────────
 const TEST_TYPE_CONFIG = {
-  blood: { label: "Blood Tests", emoji: "🩸", bg: "bg-red-50", border: "border-red-200", text: "text-red-700", badge: "bg-red-100 text-red-700" },
-  urine: { label: "Urine Tests", emoji: "🧪", bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700", badge: "bg-amber-100 text-amber-700" },
-  other: { label: "Other Tests", emoji: "🔬", bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700", badge: "bg-blue-100 text-blue-700" },
+  blood: { label: "Blood Tests", emoji: "🩸" },
+  urine: { label: "Urine Tests", emoji: "🧪" },
+  other: { label: "Other Tests", emoji: "🔬" },
 };
 
 // ─── Inner page ─────────────────────────────────────────────────────────────
@@ -314,9 +321,6 @@ function LaboratoryPageInner() {
   const [userLocation, setUserLocation] = useState(null);
   const searchParams = useSearchParams();
 
-  // Parse tests from URL: supports both formats:
-  //   ?tests=blood:CBC,blood:Hemoglobin,urine:Urinalysis   (typed)
-  //   ?tests=CBC,Urinalysis                                  (legacy flat)
   const rawTests = (searchParams.get("tests") || "")
     .split(",")
     .map(t => t.trim())
@@ -332,12 +336,10 @@ function LaboratoryPageInner() {
     return { type: "other", name: t };
   });
 
-  // Only keep explicitly typed tests (blood/urine) — drop symptoms/conditions
   const prescribedTestNames = prescribedTests
     .filter(t => t.type === "blood" || t.type === "urine")
     .map(t => t.name);
 
-  // Groups for the banner — only blood and urine
   const testGroups = ["blood", "urine"].map(type => ({
     type,
     tests: prescribedTests.filter(t => t.type === type),
@@ -351,6 +353,7 @@ function LaboratoryPageInner() {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     (async () => {
       try {
         const token = localStorage.getItem("token");
@@ -359,17 +362,19 @@ function LaboratoryPageInner() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         };
         const [testsRes, labsRes] = await Promise.all([
-          fetch(`${API}/api/laboratory/tests`, { headers }),  // FIX: was /api/laboratory/tests
-          fetch(`${API}/api/laboratory`, { headers }),  // FIX: was /api/laboratory
+          fetch(`${API}/api/laboratory/tests`, { headers }),
+          fetch(`${API}/api/laboratory`, { headers }),
         ]);
+        if (!isMounted) return;
         if (testsRes.ok) setLabTests((await testsRes.json()).tests || []);
         if (labsRes.ok) setLaboratories((await labsRes.json()).laboratories || []);
       } catch {
-        setError("Could not connect to server.");
+        if (isMounted) setError("Could not connect to server.");
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     })();
+    return () => { isMounted = false; };
   }, []);
 
   const distanceLabel = (lab) => {
@@ -395,19 +400,19 @@ function LaboratoryPageInner() {
     .sort((a, b) => coverageScore(b) - coverageScore(a));
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3 text-blue-600">
-        <Loader2 className="w-10 h-10 animate-spin" />
-        <p className="text-lg font-medium">Loading laboratory data…</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex flex-col items-center gap-2 text-gray-500">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <p className="text-sm font-medium">Loading laboratory data…</p>
       </div>
     </div>
   );
 
   if (error) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3 text-red-500">
-        <AlertCircle className="w-10 h-10" />
-        <p className="text-lg font-medium">{error}</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex flex-col items-center gap-2 text-red-500">
+        <AlertCircle className="w-8 h-8" />
+        <p className="text-sm font-medium">{error}</p>
       </div>
     </div>
   );
@@ -418,37 +423,35 @@ function LaboratoryPageInner() {
         <NearMeModal onClose={() => setShowNearMe(false)} laboratories={laboratories} />
       )}
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 p-6">
+      <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
 
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Laboratory Tests</h1>
-            <p className="text-gray-600">Find and compare lab test prices near you</p>
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Laboratory Tests</h1>
+            <p className="text-sm text-gray-500 mt-1">Find and compare lab test prices near you</p>
           </div>
 
           {/* Prescription banner */}
           {prescribedTestNames.length > 0 && (
-            <div className="mb-6 bg-gradient-to-r from-blue-600 to-blue-600 text-white rounded-2xl p-5 shadow-lg">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <Beaker className="w-5 h-5" />
-                </div>
-                <h2 className="font-bold text-lg">Prescribed Tests</h2>
+            <div className="mb-6 bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-3 border-b border-gray-100 pb-2">
+                <Beaker className="w-4 h-4 text-blue-600" />
+                <h2 className="font-semibold text-sm text-gray-900">Prescribed Tests</h2>
               </div>
 
               <div className="space-y-3">
                 {testGroups.map(({ type, tests }) => {
                   const cfg = TEST_TYPE_CONFIG[type];
                   return (
-                    <div key={type}>
-                      <p className="text-xs font-bold uppercase tracking-wider text-blue-200 mb-1.5">
-                        {cfg.emoji} {cfg.label}
+                    <div key={type} className="bg-gray-50/50 p-2.5 rounded-lg border border-gray-100">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                        {cfg?.emoji} {cfg?.label}
                       </p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {tests.map((t, i) => (
                           <span
                             key={i}
-                            className="px-3 py-1.5 bg-white/20 backdrop-blur rounded-full text-sm font-semibold border border-white/30"
+                            className="px-2.5 py-1 bg-white border border-gray-200 rounded-md text-xs font-medium text-gray-800 shadow-sm"
                           >
                             {t.name}
                           </span>
@@ -459,51 +462,51 @@ function LaboratoryPageInner() {
                 })}
               </div>
 
-              <p className="text-blue-100 text-xs mt-4">
-                Labs are sorted by how many of your prescribed tests they offer.
+              <p className="text-gray-400 text-[11px] mt-3 italic">
+                * Laboratories match sorted by available items in your record.
               </p>
             </div>
           )}
 
           {/* Search + Near Me */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6">
-            <div className="flex gap-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
+            <div className="flex gap-3">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search by lab name or address…"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-base"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm placeholder:text-gray-400 transition-all"
                 />
               </div>
               <button
                 onClick={() => setShowNearMe(true)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-600 text-white rounded-lg hover:from-blue-700 hover:to-blue-700 transition-all flex items-center gap-2 font-semibold shadow-md"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-1.5 font-medium text-sm shadow-sm"
               >
-                <Navigation className="w-5 h-5" /> Near Me
+                <Navigation className="w-4 h-4" /> Near Me
               </button>
             </div>
           </div>
 
           {/* Lab cards */}
           {filteredLabs.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-16 text-center">
-              <Beaker className="w-20 h-20 text-blue-200 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-700 mb-2">
+            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+              <Beaker className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">
                 {laboratories.length === 0 ? "No Laboratories Yet" : "No Results Found"}
               </h3>
-              <p className="text-gray-400 mb-6">
+              <p className="text-sm text-gray-400 mb-4">
                 {laboratories.length === 0
                   ? "Labs appear once they register in the system."
-                  : "Try adjusting your search."}
+                  : "Try adjusting your search criteria."}
               </p>
               <button
                 onClick={() => setShowNearMe(true)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-600 text-white rounded-xl font-semibold inline-flex items-center gap-2 shadow-md"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium inline-flex items-center gap-1.5 text-sm shadow-sm"
               >
-                <Navigation className="w-5 h-5" /> Find Nearby Labs on Map
+                <Navigation className="w-4 h-4" /> Find Nearby Labs on Map
               </button>
             </div>
           ) : (
@@ -529,8 +532,8 @@ function LaboratoryPageInner() {
 export default function LaboratoryPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     }>
       <LaboratoryPageInner />

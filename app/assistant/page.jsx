@@ -33,41 +33,42 @@ export default function AssistantDashboard() {
 
   const quickLinks = [
     {
-      href:  "/assistant/patients",
+      href: "/assistant/patients",
       title: "My Patients",
-      desc:  "View and manage all patients assigned to you",
-      icon:  Users,
-      color: "bg-blue-50 text-blue-700 border-blue-100",
+      desc: "View and manage all patients assigned to you",
+      icon: Users,
+      color: "bg-blue-50 text-blue-700 border-blue-100", // Core Primary
     },
     {
-      href:  "/assistant/search",
+      href: "/assistant/search",
       title: "Search Patient",
-      desc:  "Find existing patients by name, email, or phone",
-      icon:  Search,
-      color: "bg-purple-50 text-purple-700 border-purple-100",
+      desc: "Find existing patients by name, email, or phone",
+      icon: Search,
+      color: "bg-purple-50 text-purple-700 border-purple-100", // Core Secondary
     },
     {
-      href:  "/assistant/add-patient",
+      href: "/assistant/add-patient",
       title: "Add New Patient",
-      desc:  "Register a patient and assign them to a doctor",
-      icon:  UserPlus,
-      color: "bg-emerald-50 text-emerald-700 border-emerald-100",
+      desc: "Register a patient and assign them to a doctor",
+      icon: UserPlus,
+      color: "bg-blue-50 text-blue-700 border-blue-100", // Grouped with Patient services
     },
     {
-      href:  "/assistant/vitals",
+      href: "/assistant/vitals",
       title: "Take Vitals",
-      desc:  "Search a patient and record blood pressure, temperature, pulse",
-      icon:  Heart,
-      color: "bg-rose-50 text-rose-700 border-rose-100",
+      desc: "Search a patient and record blood pressure, temperature, pulse",
+      icon: Heart,
+      color: "bg-rose-50 text-rose-600 border-rose-100", // Keeps Rose intentionally for medical/vitals
     },
     {
-      href:  "/assistant/settings",
+      href: "/assistant/settings",
       title: "Settings",
-      desc:  "View your profile information",
-      icon:  Settings,
-      color: "bg-slate-50 text-slate-700 border-slate-100",
+      desc: "View your profile information",
+      icon: Settings,
+      color: "bg-slate-50 text-slate-600 border-slate-100", // Neutral utility
     },
   ];
+  
 
   return (
     <ProtectedRoute allowedRoles={["assistant"]}>

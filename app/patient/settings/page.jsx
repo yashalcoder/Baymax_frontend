@@ -23,18 +23,18 @@ const formatDOB = (dob) => {
 
 // ─── Tab nav ──────────────────────────────────────────────────────────────────
 const TABS = [
-  { id: "profile",  label: "Personal Information", icon: User },
-  { id: "security", label: "Account & Security",   icon: Shield },
+  { id: "profile", label: "Personal Information", icon: User },
+  { id: "security", label: "Account & Security", icon: Shield },
 ];
 
 export default function PatientSettingsPage() {
-  const [activeTab,      setActiveTab]      = useState("profile");
-  const [isEditing,      setIsEditing]      = useState(false);
-  const [loading,        setLoading]        = useState(true);
-  const [saving,         setSaving]         = useState(false);
-  const [showCurrent,    setShowCurrent]    = useState(false);
-  const [showNew,        setShowNew]        = useState(false);
-  const [showConfirm,    setShowConfirm]    = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const [profile, setProfile] = useState({
     name: "", email: "", contact: "", address: "",
@@ -52,13 +52,13 @@ export default function PatientSettingsPage() {
       try {
         const u = JSON.parse(stored);
         setProfile({
-          name:        u.name        || "",
-          email:       u.email       || "",
-          contact:     u.contact     || "",
-          address:     u.address     || "",
+          name: u.name || "",
+          email: u.email || "",
+          contact: u.contact || "",
+          address: u.address || "",
           dateOfBirth: u.dateOfBirth ? u.dateOfBirth.split("T")[0] : "",
-          gender:      u.gender      || "",
-          cnic:        u.cnic        || "",
+          gender: u.gender || "",
+          cnic: u.cnic || "",
         });
       } catch { /* ignore */ }
     }
@@ -69,20 +69,20 @@ export default function PatientSettingsPage() {
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
-      const token  = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
       const stored = localStorage.getItem("user");
-      const user   = stored ? JSON.parse(stored) : {};
+      const user = stored ? JSON.parse(stored) : {};
 
-      const res  = await fetch(`${API}/api/auth/profile`, {
-        method:  "PUT",
+      const res = await fetch(`${API}/api/auth/profile`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          name:        profile.name,
-          contact:     profile.contact,
-          address:     profile.address,
+          name: profile.name,
+          contact: profile.contact,
+          address: profile.address,
           dateOfBirth: profile.dateOfBirth || undefined,
-          gender:      profile.gender      || undefined,
-          cnic:        profile.cnic        || undefined,
+          gender: profile.gender || undefined,
+          cnic: profile.cnic || undefined,
         }),
       });
       const data = await res.json();
@@ -90,12 +90,12 @@ export default function PatientSettingsPage() {
       if (res.ok && data.status === "success") {
         const updatedUser = {
           ...user,
-          name:        data.user?.name        ?? profile.name,
-          contact:     data.user?.contact     ?? profile.contact,
-          address:     data.user?.address     ?? profile.address,
+          name: data.user?.name ?? profile.name,
+          contact: data.user?.contact ?? profile.contact,
+          address: data.user?.address ?? profile.address,
           dateOfBirth: data.user?.dateOfBirth ?? profile.dateOfBirth,
-          gender:      data.user?.gender      ?? profile.gender,
-          cnic:        data.user?.cnic        ?? profile.cnic,
+          gender: data.user?.gender ?? profile.gender,
+          cnic: data.user?.cnic ?? profile.cnic,
         };
         localStorage.setItem("user", JSON.stringify(updatedUser));
         Swal.fire("Saved!", "Profile updated successfully.", "success");
@@ -121,8 +121,8 @@ export default function PatientSettingsPage() {
     }
     try {
       const token = localStorage.getItem("token");
-      const res   = await fetch(`${API}/api/auth/change-password`, {
-        method:  "PUT",
+      const res = await fetch(`${API}/api/auth/change-password`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ currentPassword: passwords.current, newPassword: passwords.newPass }),
       });
@@ -139,8 +139,11 @@ export default function PatientSettingsPage() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-2 text-gray-400 text-sm">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-1" />
+        <span>Loading settings engine…</span>
+      </div>
     </div>
   );
 
@@ -149,15 +152,15 @@ export default function PatientSettingsPage() {
     <div className="space-y-6">
 
       {/* Avatar + name hero */}
-      <div className="flex items-center gap-5 pb-6 border-b border-gray-200">
+      <div className="flex items-center gap-5 pb-6 border-b border-gray-100">
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg flex-shrink-0">
           {profile.name?.charAt(0)?.toUpperCase() || "P"}
         </div>
         <div>
           <h3 className="text-2xl font-bold text-gray-900">{profile.name || "—"}</h3>
-          <p className="text-gray-500 text-sm mt-0.5">{profile.email}</p>
+          <p className="text-gray-400 text-sm mt-0.5">{profile.email}</p>
           {profile.dateOfBirth && (
-            <span className="inline-block mt-1 px-3 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+            <span className="inline-block mt-1.5 px-3 py-0.5 bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold rounded-full">
               {getAge(profile.dateOfBirth)} years old
             </span>
           )}
@@ -174,7 +177,7 @@ export default function PatientSettingsPage() {
             value={profile.name}
             onChange={(e) => setProfile({ ...profile, name: e.target.value })}
             disabled={!isEditing}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl transition-all focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed font-medium text-gray-800"
           />
         </div>
 
@@ -186,7 +189,7 @@ export default function PatientSettingsPage() {
           <input
             value={profile.email}
             disabled
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-slate-50 text-slate-400 font-medium cursor-not-allowed"
           />
         </div>
 
@@ -199,7 +202,7 @@ export default function PatientSettingsPage() {
             value={profile.contact}
             onChange={(e) => setProfile({ ...profile, contact: e.target.value })}
             disabled={!isEditing}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl transition-all focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed font-medium text-gray-800"
           />
         </div>
 
@@ -213,7 +216,7 @@ export default function PatientSettingsPage() {
             onChange={(e) => setProfile({ ...profile, cnic: e.target.value })}
             disabled={!isEditing}
             placeholder="XXXXX-XXXXXXX-X"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl transition-all focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed font-medium text-gray-800 tracking-wide"
           />
         </div>
 
@@ -226,7 +229,7 @@ export default function PatientSettingsPage() {
             value={profile.gender}
             onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
             disabled={!isEditing}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white transition-all focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed font-medium text-gray-800"
           >
             <option value="">Select…</option>
             <option value="male">Male</option>
@@ -246,13 +249,13 @@ export default function PatientSettingsPage() {
               max={new Date().toISOString().split("T")[0]}
               value={profile.dateOfBirth}
               onChange={(e) => setProfile({ ...profile, dateOfBirth: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl transition-all focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 font-medium text-gray-800"
             />
           ) : (
             <input
               value={formatDOB(profile.dateOfBirth)}
               disabled
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-slate-50 text-slate-500 font-medium cursor-not-allowed"
             />
           )}
         </div>
@@ -267,7 +270,7 @@ export default function PatientSettingsPage() {
             value={profile.address}
             onChange={(e) => setProfile({ ...profile, address: e.target.value })}
             disabled={!isEditing}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-600 resize-none"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl transition-all focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed font-medium text-gray-800 resize-none leading-relaxed"
           />
         </div>
       </div>
@@ -277,18 +280,18 @@ export default function PatientSettingsPage() {
   // ── Render Security tab ───────────────────────────────────────────────────
   const renderSecurity = () => (
     <div className="space-y-6">
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+      <div className="bg-blue-50/40 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
         <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
         <div className="text-sm text-blue-900">
           <p className="font-semibold mb-0.5">Keep Your Account Secure</p>
-          <p className="text-blue-700">Use a strong password with at least 8 characters, uppercase, numbers and symbols.</p>
+          <p className="text-blue-700/90 leading-relaxed">Use a strong password with at least 8 characters, uppercase letters, numbers, and custom symbols.</p>
         </div>
       </div>
 
       <form onSubmit={handleChangePassword} className="space-y-5">
         {[
           { label: "Current Password", key: "current", show: showCurrent, toggle: () => setShowCurrent(!showCurrent) },
-          { label: "New Password",     key: "newPass", show: showNew,     toggle: () => setShowNew(!showNew) },
+          { label: "New Password", key: "newPass", show: showNew, toggle: () => setShowNew(!showNew) },
           { label: "Confirm Password", key: "confirm", show: showConfirm, toggle: () => setShowConfirm(!showConfirm) },
         ].map(({ label, key, show, toggle }) => (
           <div key={key}>
@@ -301,10 +304,10 @@ export default function PatientSettingsPage() {
                 value={passwords[key]}
                 onChange={(e) => setPasswords({ ...passwords, [key]: e.target.value })}
                 required
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl transition-all focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 font-medium text-gray-800"
               />
               <button type="button" onClick={toggle}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                 {show ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
@@ -312,7 +315,7 @@ export default function PatientSettingsPage() {
         ))}
 
         <button type="submit"
-          className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center justify-center gap-2">
+          className="w-full px-6 py-3 bg-hero-gradient text-white rounded-xl transition hover:opacity-95 font-semibold flex items-center justify-center gap-2 shadow-lg">
           <Save className="w-4 h-4" /> Update Password
         </button>
       </form>
@@ -324,25 +327,25 @@ export default function PatientSettingsPage() {
       <div className="max-w-4xl mx-auto space-y-6">
 
         {/* Page header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-600 text-white rounded-2xl p-6 shadow-lg flex items-center gap-3">
-          <div className="p-3 bg-white/20 rounded-xl">
+        <div className="bg-hero-gradient text-white rounded-2xl p-6 shadow-lg flex items-center gap-3">
+          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm border border-white/10">
             <Settings className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Settings</h1>
-            <p className="text-blue-100 text-sm mt-0.5">Manage your profile and account security</p>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Settings</h1>
+            <p className="text-blue-100 text-sm mt-0.5 font-medium">Manage your profile parameters and account security</p>
           </div>
         </div>
 
-        {/* Tab bar */}
-        <div className="bg-white rounded-xl shadow border border-gray-200 p-3">
+        {/* Tab bar navigation container */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-2.5">
           <nav className="flex gap-2 overflow-x-auto">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button key={id} onClick={() => { setActiveTab(id); setIsEditing(false); }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap
                   ${activeTab === id
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-600 hover:bg-gray-100"}`}
+                    ? "bg-hero-gradient text-white shadow"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}
               >
                 <Icon className="w-4 h-4" />
                 {label}
@@ -351,40 +354,40 @@ export default function PatientSettingsPage() {
           </nav>
         </div>
 
-        {/* Content card */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        {/* Core Profile Wrapper Layout Card */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200/80 p-6">
           {/* Card header */}
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+            <h2 className="text-lg font-bold text-gray-900">
               {TABS.find((t) => t.id === activeTab)?.label}
             </h2>
             {activeTab === "profile" && (
               <button
                 onClick={() => isEditing ? setIsEditing(false) : setIsEditing(true)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all
                   ${isEditing
-                    ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                    ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    : "bg-hero-gradient text-white shadow-md hover:opacity-95"}`}
               >
                 <Edit2 className="w-4 h-4" />
-                {isEditing ? "Cancel" : "Edit"}
+                {isEditing ? "Cancel" : "Edit Profile"}
               </button>
             )}
           </div>
 
-          {/* Tab content */}
-          {activeTab === "profile"  && renderProfile()}
+          {/* Tab content conditional engines */}
+          {activeTab === "profile" && renderProfile()}
           {activeTab === "security" && renderSecurity()}
 
-          {/* Save bar — only shown when editing profile */}
+          {/* Save Action Triggers Row */}
           {isEditing && activeTab === "profile" && (
-            <div className="mt-6 pt-6 border-t border-gray-200 flex gap-3 justify-end">
+            <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3 justify-end">
               <button onClick={() => setIsEditing(false)}
-                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm font-medium">
+                className="px-5 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-semibold">
                 Cancel
               </button>
               <button onClick={handleSaveProfile} disabled={saving}
-                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium flex items-center gap-2 disabled:opacity-60">
+                className="px-5 py-2.5 bg-hero-gradient text-white rounded-xl transition text-sm font-semibold flex items-center gap-2 disabled:opacity-60 shadow-lg">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 Save Changes
               </button>

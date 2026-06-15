@@ -13,7 +13,7 @@ const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_U
 
 // ─── Assign Doctor Modal ──────────────────────────────────────────────────────
 function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
-  const [doctorId,   setDoctorId]   = useState("");
+  const [doctorId, setDoctorId] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   // patient._id works for BOTH self-registered and assistant-added patients
@@ -28,9 +28,9 @@ function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
       const res = await fetch(
         `${API}/api/assistants/${patient._id}/assign-doctor`,
         {
-          method:  "PUT",
+          method: "PUT",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body:    JSON.stringify({ doctorId }),
+          body: JSON.stringify({ doctorId }),
         }
       );
       const data = await res.json();
@@ -46,24 +46,28 @@ function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
     }
   };
 
+  // Coordinated styling with soft ring transitions
   const inputCls =
     "w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm " +
-    "focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white outline-none transition";
+    "focus:ring-4 focus:ring-blue-50 focus:border-blue-500 bg-white outline-none transition-all duration-200";
 
   // Resolve patient name from either structure
   const patientName = patient?.userId?.name || patient?.fullName || "Patient";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4 transform transition-all scale-100">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-gray-900">Assign Doctor</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              Patient: <span className="font-medium">{patientName}</span>
+              Patient: <span className="font-semibold text-gray-700">{patient?.userId?.name}</span>
             </p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-400">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-400 hover:text-gray-600"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -95,14 +99,14 @@ function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
         <div className="flex justify-end gap-3 pt-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm"
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
           >
             Cancel
           </button>
           <button
             onClick={handleAssign}
             disabled={submitting || !doctorId}
-            className="px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-sm font-medium disabled:opacity-60"
+            className="px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-sm font-medium disabled:opacity-50 shadow-sm"
           >
             {submitting ? "Assigning…" : "Assign Doctor"}
           </button>
@@ -112,18 +116,37 @@ function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function SearchPatientsPage() {
-  const [token,        setToken]        = useState(null);
-  const [query,        setQuery]        = useState("");
-  const [loading,      setLoading]      = useState(false);
-  const [results,      setResults]      = useState([]);
-  const [searched,     setSearched]     = useState(false);
-  const [doctors,      setDoctors]      = useState([]);
+  const [token, setToken] = useState(null);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState([]);
+  const [searched, setSearched] = useState(false);
+  const [doctors, setDoctors] = useState([]);
+
+  // Modal state
   const [assignTarget, setAssignTarget] = useState(null);
 
-  // ── On mount: load token + doctors + ALL patients (including self-registered)
+  const fetchInitialPatients = async (tkn = token) => {
+    if (!tkn) return;
+    try {
+      setLoading(true);
+      const res = await fetch(
+        `http://localhost:5000/api/patient/getPatients?limit=10`,
+        { headers: { Authorization: `Bearer ${tkn}` } }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message);
+      setResults(Array.isArray(data?.patients) ? data.patients : []);
+    } catch (err) {
+      console.error("Initial fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const t = localStorage.getItem("token");
     setToken(t);
@@ -231,25 +254,26 @@ export default function SearchPatientsPage() {
 
           <Card className="shadow-lg border">
             <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-purple-50">
-              <CardTitle className="flex items-center gap-2">
-                <Search className="w-5 h-5" /> Patient Lookup
+              <CardTitle className="flex items-center gap-2 text-gray-900">
+                <Search className="w-5 h-5 text-gray-700" /> Patient Lookup
               </CardTitle>
-              <CardDescription>
-                Search by name, email address, or phone number — includes self-registered patients.
+              <CardDescription className="text-gray-500">
+                Search by name, email address, or phone number.
+                You can also assign a doctor or record vitals from the results.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-5">
 
-              {/* Search bar */}
+              {/* Search bar with matching soft glow ring */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1 flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2.5 bg-white focus-within:ring-2 focus-within:ring-blue-500 transition">
+                <div className="flex-1 flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2.5 bg-white focus-within:ring-4 focus-within:ring-blue-50 focus-within:border-blue-500 transition-all duration-200">
                   <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && doSearch()}
                     placeholder="e.g. Ahmed / ahmed@email.com / 03XX-XXXXXXX"
-                    className="flex-1 outline-none text-sm bg-transparent"
+                    className="flex-1 outline-none text-sm bg-transparent text-gray-800"
                   />
                   {query && (
                     <button onClick={() => { setQuery(""); fetchAllPatients(token); }}>
@@ -261,7 +285,7 @@ export default function SearchPatientsPage() {
                   type="button"
                   onClick={() => doSearch()}
                   disabled={loading}
-                  className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-60 text-sm"
+                  className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-50 text-sm shadow-sm"
                 >
                   {loading ? "Searching…" : "Search"}
                 </button>
@@ -278,14 +302,21 @@ export default function SearchPatientsPage() {
                 </div>
               )}
 
+              {!loading && !searched && results.length === 0 && (
+                <div className="py-10 text-center">
+                  <Search className="w-10 h-10 text-gray-200 mx-auto mb-2" />
+                  <p className="text-sm text-gray-400">Enter a search query above to find patients</p>
+                </div>
+              )}
+
               {/* Results */}
               {!loading && results.length > 0 && (
                 <div className="space-y-3">
-                  <p className="text-xs text-gray-500">
-                    {results.length} patient{results.length !== 1 ? "s" : ""} found
+                  <p className="text-xs text-gray-500 font-medium pl-1">
+                    {results.length} result{results.length !== 1 ? "s" : ""} found
                   </p>
                   {results.map((p) => {
-                    const doc     = p.assignedDoctor;
+                    const doc = p.assignedDoctor;
                     const docName = doc
                       ? ((doc.firstName || "") + " " + (doc.lastName || "")).trim() || "Assigned"
                       : null;
@@ -298,7 +329,7 @@ export default function SearchPatientsPage() {
                     return (
                       <div
                         key={p._id}
-                        className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white border rounded-2xl shadow-sm hover:shadow-md transition"
+                        className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition duration-150"
                       >
                         {/* Avatar */}
                         <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -318,21 +349,21 @@ export default function SearchPatientsPage() {
                           </div>
                           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
                             <span className="flex items-center gap-1 text-xs text-gray-500">
-                              <Mail className="w-3 h-3" />{email}
+                              <Mail className="w-3 h-3 text-gray-400" />{p?.userId?.email || "—"}
                             </span>
                             <span className="flex items-center gap-1 text-xs text-gray-500">
-                              <Phone className="w-3 h-3" />{contact}
+                              <Phone className="w-3 h-3 text-gray-400" />{p?.userId?.contact || "—"}
                             </span>
                           </div>
 
-                          {/* Doctor badge */}
-                          <div className="mt-1.5">
+                          {/* Status Badge */}
+                          <div className="mt-2">
                             {docName ? (
-                              <span className="inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2 py-0.5">
+                              <span className="inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2 py-0.5 font-medium">
                                 <Stethoscope className="w-3 h-3" /> Dr. {docName}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-2 py-0.5">
+                              <span className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-2 py-0.5 font-medium">
                                 <AlertCircle className="w-3 h-3" /> No doctor assigned
                               </span>
                             )}
