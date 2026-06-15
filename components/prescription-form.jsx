@@ -16,12 +16,18 @@ export default function PrescriptionForm({ onGenerate }) {
 
   // ── Auto-fill from context when patientData is available ─────────────────
   useEffect(() => {
-    if (patientData) {
-      setPatientName(patientData.name || "");
-      setPatientId(String(patientData.id || patientData._id || ""));
-      setAllergies(patientData.allergies || "");
-    }
-  }, [patientData]);
+  if (patientData) {
+    setPatientName(patientData.fullName || patientData.name || "");
+    // getAssignedPatients returns "patientId", not "id" or "_id"
+    setPatientId(String(
+      patientData.patientId ||   // ← from getAssignedPatients response
+      patientData._id       ||   // ← direct Patient doc
+      patientData.id        ||   // ← fallback
+      ""
+    ));
+    setAllergies(patientData.allergies || "");
+  }
+}, [patientData]);
 
   const allergyKeywords = [
     "penicillin", "amoxicillin", "aspirin", "ibuprofen",
@@ -82,6 +88,8 @@ export default function PrescriptionForm({ onGenerate }) {
       warnings,
       createdAt:   new Date().toISOString(),
     };
+   console.log("Full patientData from context:", JSON.stringify(patientData, null, 2));
+console.log("patientId being sent:", patientId);
     onGenerate(payload);
   }
 

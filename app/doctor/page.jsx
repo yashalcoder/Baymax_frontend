@@ -26,6 +26,7 @@ import PatientsCards from "@/components/AssignedPatientsCard";
 import NotificationBell from "@/components/NotificationBell";
 
 const DoctorDashboard = () => {
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const [count,setCount]=useState(0);
 const [consulationCount,setConsulationCount]=useState(0);
   const router = useRouter();
@@ -47,11 +48,11 @@ const [consulationCount,setConsulationCount]=useState(0);
     };
 
     const [resPatients, resConsultations] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/my-patients`, {
+      fetch(`${API}/api/doctors/my-patients`, {
         method: "GET",
         headers,
       }),
-      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/getConsultations`, {
+      fetch(`${API}/api/doctors/getConsultations`, {
         method: "GET",
         headers,
       }),
@@ -90,14 +91,14 @@ useEffect(() => {
 //       // 🧑‍⚕️ Fetch patients and consultations in parallel
 //       const [resPatients, resConsultations] = await Promise.all([
 //         fetch(
-//           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/my-patients`,
+//           `${API}/api/doctors/my-patients`,
 //           {
 //             method: "GET",
 //             headers
 //           }
 //         ),
 //         fetch(
-//           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/getConsultations`,
+//           `${API}/api/doctors/getConsultations`,
 //           {
 //             method: "GET",
 //             headers
@@ -173,7 +174,7 @@ const handleDischarge = async (patientId) => {
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/discharge/${patientId}`,
+      `${API}/api/doctors/discharge/${patientId}`,
       {
         method: "DELETE",
         headers: {

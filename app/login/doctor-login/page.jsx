@@ -33,7 +33,7 @@ export default function DoctorLoginPage() {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          role: "doctor"      // 🔥 fixed role
+          role: "doctor"      // fixed role
         }),
       });
       console.log('Login response',response);

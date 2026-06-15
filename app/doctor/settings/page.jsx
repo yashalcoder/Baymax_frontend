@@ -101,14 +101,14 @@ export default function DoctorProfileSettings() {
     labReportAlerts: true,
     newPatientAlerts: true,
   });
-  const endpoint = process.env.NEXT_PUBLIC_BACKEND_URL;
+ const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchDoctorProfile = async () => {
       try {
         const token = localStorage.getItem("token");
 
-        const response = await fetch(`${endpoint}/api/auth/profile`, {
+        const response = await fetch(`${API}/api/auth/profile`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -188,7 +188,7 @@ console.log("Doctor Data State:", doctorData); // Debugging log
 
   const handleSave = async () => {
     console.log("Saving data:", doctorData);
-    const response = await fetch(`${endpoint}/api/doctors/update/profile`, {
+    const response = await fetch(`${API}/api/doctors/update/profile`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
