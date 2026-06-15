@@ -9,12 +9,15 @@ import {
 } from "@/components/ui/card";
 import { Search, User, Phone, Mail, Heart, Stethoscope, X, AlertCircle } from "lucide-react";
 
-// ─── Assign Doctor Modal ──────────────────────────────────────────────────────
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
+// ─── Assign Doctor Modal ──────────────────────────────────────────────────────
 function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
   const [doctorId, setDoctorId] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // patient._id works for BOTH self-registered and assistant-added patients
+  // because assignDoctor backend accepts any Patient._id
   const handleAssign = async () => {
     if (!doctorId) {
       Swal.fire("Select Doctor", "Please choose a doctor first.", "warning");
@@ -23,7 +26,7 @@ function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
     setSubmitting(true);
     try {
       const res = await fetch(
-        `http://localhost:5000/api/assistants/${patient._id}/assign-doctor`,
+        `${API}/api/assistants/${patient._id}/assign-doctor`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -47,6 +50,9 @@ function AssignDoctorModal({ patient, doctors, token, onClose, onAssigned }) {
   const inputCls =
     "w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm " +
     "focus:ring-4 focus:ring-blue-50 focus:border-blue-500 bg-white outline-none transition-all duration-200";
+
+  // Resolve patient name from either structure
+  const patientName = patient?.userId?.name || patient?.fullName || "Patient";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
@@ -146,20 +152,47 @@ export default function SearchPatientsPage() {
     setToken(t);
     if (!t) return;
 
-    fetchInitialPatients(t);
-
-    fetch("http://localhost:5000/api/assistants/doctors", {
+    // Load doctors for the assign modal
+    fetch(`${API}/api/assistants/doctors`, {
       headers: { Authorization: `Bearer ${t}` },
     })
       .then((r) => r.json())
       .then((d) => setDoctors(Array.isArray(d?.data) ? d.data : []))
       .catch(() => setDoctors([]));
+
+    // Load ALL patients via search with empty-ish query won't work,
+    // so load using the assistant's search with a broad term, OR
+    // use the correct getAllPatients endpoint
+    fetchAllPatients(t);
   }, []);
 
+  // ── Fetch ALL patients (self-registered + assistant-added) ────────────────
+  const fetchAllPatients = async (tkn) => {
+    try {
+      setLoading(true);
+      // Use assistants/search with a space to get broad results,
+      // OR use the proper search endpoint with no query for initial load
+      const res = await fetch(
+        `${API}/api/assistants/all-patients`,
+        { headers: { Authorization: `Bearer ${tkn}` } }
+      );
+      const data = await res.json();
+      if (res.ok && Array.isArray(data?.data)) {
+        setResults(data.data);
+      }
+    } catch (err) {
+      console.error("Initial patients fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Search patients ───────────────────────────────────────────────────────
   const doSearch = async (tkn = token) => {
     const q = query.trim();
     if (!q) {
-      Swal.fire("Empty Search", "Type a name, email, or phone number.", "warning");
+      // If empty query, reload all patients
+      fetchAllPatients(tkn);
       return;
     }
     if (!tkn) {
@@ -170,8 +203,8 @@ export default function SearchPatientsPage() {
     try {
       setLoading(true);
       setSearched(true);
-      const res = await fetch(
-        `http://localhost:5000/api/assistants/search?query=${encodeURIComponent(q)}`,
+      const res  = await fetch(
+        `${API}/api/assistants/search?query=${encodeURIComponent(q)}`,
         { headers: { Authorization: `Bearer ${tkn}` } }
       );
       const data = await res.json();
@@ -185,12 +218,18 @@ export default function SearchPatientsPage() {
     }
   };
 
-  const handleAssigned = () => doSearch();
+  const handleAssigned = () => {
+    // Refresh results after assignment
+    if (query.trim()) {
+      doSearch();
+    } else {
+      fetchAllPatients(token);
+    }
+  };
 
   return (
     <ProtectedRoute allowedRoles={["assistant"]}>
 
-      {/* Assign Doctor Modal */}
       {assignTarget && (
         <AssignDoctorModal
           patient={assignTarget}
@@ -236,6 +275,11 @@ export default function SearchPatientsPage() {
                     placeholder="e.g. Ahmed / ahmed@email.com / 03XX-XXXXXXX"
                     className="flex-1 outline-none text-sm bg-transparent text-gray-800"
                   />
+                  {query && (
+                    <button onClick={() => { setQuery(""); fetchAllPatients(token); }}>
+                      <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -247,9 +291,8 @@ export default function SearchPatientsPage() {
                 </button>
               </div>
 
-              {/* States */}
               {loading && (
-                <div className="py-10 text-center text-sm text-gray-400">Searching…</div>
+                <div className="py-10 text-center text-sm text-gray-400">Loading patients…</div>
               )}
 
               {!loading && searched && results.length === 0 && (
@@ -278,6 +321,11 @@ export default function SearchPatientsPage() {
                       ? ((doc.firstName || "") + " " + (doc.lastName || "")).trim() || "Assigned"
                       : null;
 
+                    // Handle both self-registered (userId.name) and assistant-added (fullName)
+                    const name    = p?.userId?.name || p?.fullName || "Patient";
+                    const email   = p?.userId?.email || p?.email || "—";
+                    const contact = p?.userId?.contact || p?.contact || "—";
+
                     return (
                       <div
                         key={p._id}
@@ -290,9 +338,15 @@ export default function SearchPatientsPage() {
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-gray-900">
-                            {p?.userId?.name || "Patient"}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-gray-900">{name}</p>
+                            {/* Badge: self-registered vs assistant-added */}
+                            {!p.assignedByAssistant && (
+                              <span className="text-xs bg-purple-50 text-purple-600 border border-purple-100 rounded-full px-2 py-0.5">
+                                Self-registered
+                              </span>
+                            )}
+                          </div>
                           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
                             <span className="flex items-center gap-1 text-xs text-gray-500">
                               <Mail className="w-3 h-3 text-gray-400" />{p?.userId?.email || "—"}

@@ -14,7 +14,7 @@ export default function DoctorLoginPage() {
   const [error, setError] = useState("");
 
   const router = useRouter();
-  const endpoint = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -27,13 +27,13 @@ export default function DoctorLoginPage() {
     setError("");
 
     try {
-      const response = await fetch(`${endpoint}/api/auth/login`, {
+      const response = await fetch(`${API}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          role: "doctor"      // 🔥 fixed role
+          role: "doctor"      // fixed role
         }),
       });
       console.log('Login response',response);

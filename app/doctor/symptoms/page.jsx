@@ -24,7 +24,8 @@ useEffect(() => {
   const id = localStorage.getItem("consultationId");
   setConsultationId(id);
 }, []);
-const backendUrl=process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
   const [diagnosisData, setDiagnosisData] = useState()
 const {setPatientData} = usePatient();
   const handleSavePatient = (updatedData) => {
@@ -56,7 +57,7 @@ const {setPatientData} = usePatient();
   // };
 const handleEditSymptom = (symptomId) => {
     setEditingSymptom(symptomId);
-    const respone = fetch(`${backendUrl}/api/diagnosis/${consultationId}/symptom/${symptomId}`,{
+    const respone = fetch(`${API}/api/diagnosis/${consultationId}/symptom/${symptomId}`,{
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -92,7 +93,7 @@ const handleEditSymptom = (symptomId) => {
   };
   const handleSaveSymptom = (updatedSymptom) => {
   // API call to backend
-  fetch(`${backendUrl}/api/diagnosis/${consultationId}/symptoms/${updatedSymptom.id}`, {
+  fetch(`${API}/api/diagnosis/${consultationId}/symptoms/${updatedSymptom.id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -116,7 +117,7 @@ const handleEditSymptom = (symptomId) => {
 };
 const handleSaveDisease = (updatedDisease) => {
   // API call to backend
-  fetch(`${backendUrl}/api/diagnosis/${consultationId}/diseases/${updatedDisease.id}`, {
+  fetch(`${API}/api/diagnosis/${consultationId}/diseases/${updatedDisease.id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -137,7 +138,7 @@ const handleSaveDisease = (updatedDisease) => {
 
 useEffect(() => {
    if (!consultationId) return; 
-  fetch(`${backendUrl}/api/diagnosis/${consultationId}`,{
+  fetch(`${API}/api/diagnosis/${consultationId}`,{
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -162,7 +163,7 @@ if (loading) return <div>Loading...</div>;
   };
   const handleExportReport = async () => {
   try {
-    const response = await fetch(`${backendUrl}/api/diagnosis/${consultationId}/export`, {
+    const response = await fetch(`${API}/api/diagnosis/${consultationId}/export`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -369,7 +370,7 @@ printDiv.innerHTML = `
                   </label>
                   <input
   type="date"
-  defaultValue={new Date().toISOString().split("T")[0]} // ✅ current date "2026-03-08"
+  defaultValue={new Date().toISOString().split("T")[0]} // current date "2026-03-08"
   id="patient-date"
   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
 />

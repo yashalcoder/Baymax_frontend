@@ -63,7 +63,7 @@ export default function PharmacySignup() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -158,7 +158,7 @@ export default function PharmacySignup() {
     });
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/signup`, {
+      const res = await fetch(`${API}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...formData, role: "pharmacy" }),

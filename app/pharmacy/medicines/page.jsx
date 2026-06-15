@@ -24,6 +24,7 @@ export default function ManageMedicinesPage() {
     quantityAvailable: "",
     brand: "",
   })
+  const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     fetchMedicines()
@@ -32,7 +33,7 @@ export default function ManageMedicinesPage() {
   const fetchMedicines = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/pharmacy/medicines`,
+        `${API}/api/pharmacy/medicines`,
         {
           method: "GET",
           headers: {
@@ -99,7 +100,7 @@ export default function ManageMedicinesPage() {
     }
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/pharmacy/medicine`,
+        `${API}/api/pharmacy/medicine`,
         {
           method: "POST",
           headers: {
@@ -172,7 +173,7 @@ export default function ManageMedicinesPage() {
     }
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/pharmacy/medicine/${editingId}`,
+        `${API}/api/pharmacy/medicine/${editingId}`,
         {
           method: "PUT",
           headers: {
@@ -209,7 +210,7 @@ export default function ManageMedicinesPage() {
     if (!confirm("Are you sure you want to delete this medicine?")) return
     try {
       await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/pharmacy/medicine/${medicineId}`,
+        `${API}/api/pharmacy/medicine/${medicineId}`,
         {
           method: "DELETE",
           headers: {

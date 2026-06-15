@@ -17,6 +17,8 @@ const inputCls =
   "w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm " +
   "focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white outline-none transition";
 
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 function Field({ label, icon: Icon, children }) {
   return (
     <div className="space-y-1.5">
@@ -54,7 +56,7 @@ export default function RegisterPatientPage() {
 
   useEffect(() => {
     if (!token) return;
-    fetch("http://localhost:5000/api/assistants/doctors", {
+    fetch(`${API}/api/assistants/doctors`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
@@ -101,7 +103,7 @@ export default function RegisterPatientPage() {
     setSubmitting(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/assistants/add", {
+      const res = await fetch(`${API}/api/assistants/add`, {
         method:  "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body:    JSON.stringify({ ...form }),

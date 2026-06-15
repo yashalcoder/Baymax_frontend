@@ -7,7 +7,7 @@ import {
   AlertCircle, X, MapPin, CheckCircle, XCircle, ChevronDown, ChevronUp,
 } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 function haversineKm(lat1, lng1, lat2, lng2) {
   const R = 6371;

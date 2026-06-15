@@ -12,7 +12,9 @@ import {
   Heart, Search, Activity, Thermometer, Droplets, Clock, User, ChevronDown, ChevronUp, Loader2,
 } from "lucide-react";
 
-// ─── Vitals form (FR-2.2) ───────────────────────────────────────────────────
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+//  Vitals form (FR-2.2) 
 function VitalsForm({ patientId, patientName, onRecorded }) {
   const token = useMemo(() => {
     if (typeof window !== "undefined") return localStorage.getItem("token");
@@ -33,8 +35,8 @@ function VitalsForm({ patientId, patientName, onRecorded }) {
 
     setSaving(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/assistants/${patientId}/vitals`, {
-        method: "POST",
+      const res  = await fetch(`${API}/api/assistants/${patientId}/vitals`, {
+        method:  "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(form),
       });
@@ -216,7 +218,7 @@ function VitalsPageInner() {
   const loadPatient = useCallback(async (id) => {
     setLoadingVitals(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/assistants/${id}/vitals`, {
+      const res  = await fetch(`${API}/api/assistants/${id}/vitals`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -242,7 +244,7 @@ function VitalsPageInner() {
     if (!q) return;
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/assistants/search?query=${encodeURIComponent(q)}`, {
+      const res  = await fetch(`${API}/api/assistants/search?query=${encodeURIComponent(q)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
