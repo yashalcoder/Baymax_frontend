@@ -57,7 +57,7 @@ export default function LoginForm({ role }) {
         localStorage.setItem("token", token);
         localStorage.setItem("role", role);
         if (userData) localStorage.setItem("user", JSON.stringify(userData));
-        document.cookie = `token=${token}; path=/;`;
+        document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax${window.location.protocol === 'https:' ? '; Secure' : ''}`;
       }
 
       Swal.fire({

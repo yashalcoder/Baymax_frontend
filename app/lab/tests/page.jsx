@@ -36,6 +36,7 @@ export default function ManageTestsPage() {
     "Hematology", "Biochemistry", "Endocrinology",
     "Microbiology", "Serology", "Imaging", "Glucose",
   ];
+  const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     fetchTests();
@@ -44,7 +45,7 @@ export default function ManageTestsPage() {
   const fetchTests = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/my-tests`,
+        `${API}/api/laboratory/my-tests`,
         {
           method: "GET",
           headers: {
@@ -107,7 +108,7 @@ export default function ManageTestsPage() {
     }
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/test`,
+        `${API}/api/laboratory/test`,
         {
           method: "POST",
           headers: {
@@ -175,7 +176,7 @@ export default function ManageTestsPage() {
     }
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/test/${editingId}`,
+        `${API}/api/laboratory/test/${editingId}`,
         {
           method: "PUT",
           headers: {
@@ -212,7 +213,7 @@ export default function ManageTestsPage() {
     if (!confirm("Are you sure you want to delete this test?")) return;
     try {
       await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/test/${testId}`,
+        `${API}/api/laboratory/test/${testId}`,
         {
           method: "DELETE",
           headers: {
@@ -233,7 +234,7 @@ export default function ManageTestsPage() {
   const handleToggleAvailable = async (test) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/test/${test._id}`,
+        `${API}/api/laboratory/test/${test._id}`,
         {
           method: "PUT",
           headers: {

@@ -16,12 +16,13 @@ export default function LabDashboard() {
   const [tests, setTests] = useState([]);
   const [labName, setLabName] = useState("Lab User");
   const [loading, setLoading] = useState(true);
+  const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     async function fetchData() {
       try {
         const testsRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/my-tests`,
+          `${API}/api/laboratory/my-tests`,
           {
             method: "GET",
             headers: {
@@ -36,7 +37,7 @@ export default function LabDashboard() {
         }
 
         const profileRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/profile`,
+          `${API}/api/laboratory/profile`,
           {
             method: "GET",
             headers: {

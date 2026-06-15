@@ -23,12 +23,12 @@ export default function LabSettingsPage() {
     newPassword: "",
     confirmPassword: "",
   })
-
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   useEffect(() => {
     async function loadProfile() {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/profile`,
+          `${API}/api/laboratory/profile`,
           {
             method: "GET",
             headers: {
@@ -95,7 +95,7 @@ export default function LabSettingsPage() {
     try {
       setErrorMsg("")
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/laboratory/profile/location`,
+        `${API}/api/laboratory/profile/location`,
         {
           method: "PATCH",
           headers: {
@@ -143,7 +143,7 @@ export default function LabSettingsPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/change-password`,
+        `${API}/api/auth/change-password`,
         {
           method: "PUT",
           headers: {
