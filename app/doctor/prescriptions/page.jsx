@@ -8,10 +8,11 @@ export default function PrescriptionsPage() {
   const [data, setData] = useState(null);
 const [editMode,setEditMode]=useState(false);
   const {patientData} = usePatient();
+  const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 useEffect(()=>{
 async function fetchData() {
   try {
-    const response = await fetch((`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/prescription/${localStorage.getItem("consultationId")}`),{
+    const response = await fetch((`${API}/api/prescription/${localStorage.getItem("consultationId")}`),{
       method: "GET",
       headers: {
         "Content-Type": "application/json",

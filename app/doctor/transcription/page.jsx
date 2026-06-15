@@ -40,7 +40,7 @@ const Transcription = () => {
   const [audioBlob, setAudioBlob] = useState(null);
   const [urduAudioBlob, setUrduAudioBlob] = useState(null);
   const [audioURL, setAudioURL] = useState(null);
-  const endpoint = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const [urduTranscription, setUrduTranscription] = useState("");
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -257,10 +257,10 @@ const handleSendToWhisper = async () => {
 
   setIsTranscribing(true);
 
-  // ✅ Most recent patient fetch karo
+  //  Most recent patient fetch karo
   let patientId;
   try {
-    const patientRes = await fetch(`${endpoint}/api/doctors/old-patient`, {
+    const patientRes = await fetch(`${API}/api/doctors/old-patient`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
     const patientData = await patientRes.json();
@@ -294,7 +294,7 @@ const handleSendToWhisper = async () => {
   // doctorId hatao — backend JWT se nikalega
 formData.append("patientId", patientId);
   try {
-    const response = await fetch(`${endpoint}/api/transcribe`, {
+    const response = await fetch(`${API}/api/transcribe`, {
       method: "POST",
       body: formData,
       headers: {

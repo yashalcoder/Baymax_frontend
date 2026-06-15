@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import ProtectedRoute from "@/components/protectedRoutes";
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card";
 import { Users, User, Mail, Phone, Heart, Search } from "lucide-react";
+
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function AssistantPatientsPage() {
   const [token, setToken] = useState(null);
@@ -25,7 +27,7 @@ export default function AssistantPatientsPage() {
     if (!token) { setLoading(false); return; }
 
     
-    fetch("http://localhost:5000/api/auth/profile", {
+    fetch(`${API}/api/auth/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
@@ -38,7 +40,7 @@ export default function AssistantPatientsPage() {
         if (ids.length === 0) { setPatients([]); return; }
 
         // Fetch all patients that match the assistant's managed list
-        const res  = await fetch("http://localhost:5000/api/assistants/my-patients", {
+        const res  = await fetch(`${API}/api/assistants/my-patients`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const body = await res.json();
