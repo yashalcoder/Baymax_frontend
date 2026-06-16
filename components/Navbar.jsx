@@ -300,22 +300,22 @@ export default function Navbar() {
               </div>
 
               {/* Settings */}
-              <Button
+              {/* <Button
                 variant="ghost"
                 size="sm"
                 className="hover:bg-blue-50 hover:text-blue-600 focus:ring-2 focus:ring-blue-500"
               >
                 <Settings className="w-4 h-4" />
-              </Button>
+              </Button> */}
 
               {/* Profile image */}
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <Image
                   src={profileImageSource}
                   alt="profile"
                   className="w-9 h-9 rounded-full object-cover shadow-md ring-2 ring-blue-500/50"
                 />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
