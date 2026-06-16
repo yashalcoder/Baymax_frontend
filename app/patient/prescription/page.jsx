@@ -283,7 +283,7 @@ export default function PrescriptionPage() {
                                     {med.type && <p className="text-[11px] text-slate-400 font-medium mt-0.5">{med.type}</p>}
                                   </div>
                                   {med.duration && (
-                                    <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md border border-blue-100 shrink-0">
+                                    <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md border border-blue-100 shrink-0 break-words whitespace-normal max-w-[200px]">
                                       ⏱️ {med.duration}
                                     </span>
                                   )}

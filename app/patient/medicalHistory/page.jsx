@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+
 import {
   FileText,
   Download,
@@ -24,7 +25,7 @@ import {
   FileUp,
 } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API =  "http://localhost:5000";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // OCR Result Modal Component
