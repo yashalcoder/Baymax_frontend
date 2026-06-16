@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePatient } from "@/components/Context/PatientContext";
 
-export default function PrescriptionForm({ onGenerate }) {
-  const { patientData } = usePatient();  // ← patient set from symptoms page
+export default function PrescriptionForm({ onGenerate, initialData, patientInfo, editMode }) {
+  const { patientData } = usePatient(); // ← patient set from symptoms page
 
   const [patientName, setPatientName] = useState("");
   const [patientId,   setPatientId]   = useState("");
@@ -16,18 +16,52 @@ export default function PrescriptionForm({ onGenerate }) {
 
   // ── Auto-fill from context when patientData is available ─────────────────
   useEffect(() => {
-  if (patientData) {
-    setPatientName(patientData.fullName || patientData.name || "");
-    // getAssignedPatients returns "patientId", not "id" or "_id"
-    setPatientId(String(
-      patientData.patientId ||   // ← from getAssignedPatients response
-      patientData._id       ||   // ← direct Patient doc
-      patientData.id        ||   // ← fallback
-      ""
-    ));
-    setAllergies(patientData.allergies || "");
-  }
-}, [patientData]);
+    if (patientData) {
+      setPatientName(patientData.fullName || patientData.name || "");
+      setPatientId(String(
+        patientData.patientId || // ← from getAssignedPatients response
+        patientData._id       || // ← direct Patient doc
+        patientData.id        || // ← fallback
+        ""
+      ));
+      setAllergies(patientData.allergies || "");
+    }
+  }, [patientData]);
+
+  // ── Auto-fill from initialData (edit mode) ───────────────────────────────
+  useEffect(() => {
+    if (initialData) {
+      setSymptoms(initialData.diagnosis || "");
+      setAllergies(initialData.patientInfo?.allergies || "");
+
+      if (initialData.prescription?.length > 0) {
+        const medNames = initialData.prescription
+          .map((m) => `${m.medicine} ${m.dosage}`)
+          .join("\n");
+        setMedicines(medNames);
+
+        const dosageInstructions = initialData.prescription
+          .map((m) => `${m.medicine}: ${m.duration}`)
+          .join("\n");
+        setDosage(dosageInstructions);
+
+        const durationText = initialData.prescription
+          .map((m) => `${m.medicine}: ${m.duration}`)
+          .join("\n");
+        setDuration(durationText);
+      }
+
+      console.log("Patient info received in PrescriptionForm:", patientInfo);
+      if (patientInfo) {
+        setPatientName(patientInfo.name || "");
+        setAllergies(patientInfo.allergies || "");
+      }
+    }
+  }, [initialData]);
+
+  useEffect(() => {
+    console.log("Updated medicines:", medicines);
+  }, [medicines]);
 
   const allergyKeywords = [
     "penicillin", "amoxicillin", "aspirin", "ibuprofen",
@@ -75,10 +109,38 @@ export default function PrescriptionForm({ onGenerate }) {
     setAllergies("Penicillin");
   }
 
+  const handleEditPrescription = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/prescription/${localStorage.getItem("consultationId")}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            medicines,
+            dosage,
+            duration,
+            symptoms,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update");
+
+      const result = await response.json();
+      console.log("Updated:", result);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   function handleSubmit(e) {
     e.preventDefault();
     const payload = {
-      patientId:   patientId.trim(),
+      patientId:   patientId.trim(),   // ← from File 1
       patientName: patientName.trim(),
       symptoms:    symptoms.trim(),
       medicines:   medicines.trim(),
@@ -88,10 +150,12 @@ export default function PrescriptionForm({ onGenerate }) {
       warnings,
       createdAt:   new Date().toISOString(),
     };
-   console.log("Full patientData from context:", JSON.stringify(patientData, null, 2));
-console.log("patientId being sent:", patientId);
+    console.log("Full patientData from context:", JSON.stringify(patientData, null, 2));
+    console.log("patientId being sent:", patientId);
     onGenerate(payload);
   }
+
+  console.log("editMode in form:", editMode);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -118,6 +182,7 @@ console.log("patientId being sent:", patientId);
           </label>
           <input
             id="patientName"
+            name="patientName"
             value={patientName}
             onChange={(e) => setPatientName(e.target.value)}
             placeholder="Auto-filled from patient context"
@@ -130,6 +195,7 @@ console.log("patientId being sent:", patientId);
           </label>
           <input
             id="allergies"
+            name="allergies"
             value={allergies}
             onChange={(e) => setAllergies(e.target.value)}
             placeholder="e.g., Penicillin, Aspirin"
@@ -144,10 +210,11 @@ console.log("patientId being sent:", patientId);
         </label>
         <textarea
           id="symptoms"
+          name="symptoms"
           rows={3}
           value={symptoms}
           onChange={(e) => setSymptoms(e.target.value)}
-          placeholder="Describe symptoms"
+          placeholder="Describe symptoms in your own words (Urdu/English/Punjabi supported)"
           className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
       </div>
@@ -159,7 +226,9 @@ console.log("patientId being sent:", patientId);
           </label>
           <textarea
             id="medicines"
+            name="medicines"
             rows={6}
+            disabled={!editMode}
             value={medicines}
             onChange={(e) => setMedicines(e.target.value)}
             placeholder={"One per line:\nParacetamol 500mg\nAzithromycin 250mg"}
@@ -173,7 +242,9 @@ console.log("patientId being sent:", patientId);
             </label>
             <textarea
               id="dosage"
+              name="dosage"
               rows={3}
+              disabled={!editMode}
               value={dosage}
               onChange={(e) => setDosage(e.target.value)}
               placeholder={"Paracetamol: 1 tablet every 8 hours\nAzithromycin: 1 tablet daily"}
@@ -186,6 +257,8 @@ console.log("patientId being sent:", patientId);
             </label>
             <input
               id="duration"
+              name="duration"
+              disabled={!editMode}
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               placeholder="e.g., 5 days"
@@ -199,7 +272,7 @@ console.log("patientId being sent:", patientId);
       <div aria-live="polite" className="rounded-lg border border-border bg-card p-3 text-sm">
         <div className="mb-2 flex items-center gap-2">
           <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
               <path d="M12 2c.6 0 1.1.3 1.4.8l8.1 14a1.6 1.6 0 0 1-1.4 2.4H3.9A1.6 1.6 0 0 1 2.5 16.8l8.1-14c.3-.5.8-.8 1.4-.8zm0 6a1 1 0 0 0-1 1v4a1 1 0 1 0 2 0V9a1 1 0 0 0-1-1zm0 8.5a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5z" />
             </svg>
           </span>
@@ -222,10 +295,24 @@ console.log("patientId being sent:", patientId);
         >
           Auto-fill Example
         </button>
+
+        {editMode && (
+          <button
+            type="button"
+            onClick={handleEditPrescription}
+            className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-accent/50"
+          >
+            Save Changes
+          </button>
+        )}
+
         <button
           type="submit"
           className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-90"
         >
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+            <path d="M12 2l3 7h7l-5.5 4.2L18 21l-6-4-6 4 1.5-7.8L2 9h7z" />
+          </svg>
           Generate Prescription
         </button>
       </div>
