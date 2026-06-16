@@ -29,18 +29,19 @@ export default function PrescriptionPreview({ data }) {
     doctorReg = "PM-XXXX",
   } = data;
 
-  // Parse medicines into rows
+  // ✅ FIX: Split ALL fields by newline so each medicine gets its own dosage & duration
   const medicineRows = (() => {
     const names = (medicines || "").split("\n").filter(Boolean);
     const dosages = (dosage || "").split("\n");
+    const durations = (duration || "").split("\n"); // ← was missing before
     return names.map((name, i) => ({
       name: name.trim(),
       dosage: (dosages[i] || "").trim(),
-      duration: duration || "",
+      duration: (durations[i] || "").trim(), // ← now per-medicine
     }));
   })();
 
-  // ── Print: clone only the prescription into a new window ──
+  // ── Print ──
   function printPdf() {
     const content = printRef.current;
     if (!content) return;
@@ -56,7 +57,6 @@ export default function PrescriptionPreview({ data }) {
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;padding:2rem}
-    ${content.querySelector("style")?.textContent || ""}
   </style>
 </head>
 <body>${content.innerHTML}</body>
@@ -78,7 +78,7 @@ export default function PrescriptionPreview({ data }) {
       symptoms || "—",
       "",
       "Rx",
-      ...medicineRows.map((m, i) => `${i + 1}. ${m.name} | ${m.dosage} | ${m.duration}`),
+      ...medicineRows.map((m, i) => `${i + 1}. ${m.name} | Dosage: ${m.dosage || "—"} | Duration: ${m.duration || "—"}`),
       "",
       ...(warnings?.length ? ["General Advice:", ...warnings.map(w => `• ${w}`)] : []),
       "",
@@ -158,25 +158,30 @@ export default function PrescriptionPreview({ data }) {
           fontFamily: "'Segoe UI', Arial, sans-serif",
           color: "#1a1a2e",
           background: "#fff",
+          width: "100%",
           maxWidth: "800px",
           margin: "0 auto",
-          padding: "2rem",
+          padding: "1.5rem",
           border: "1px solid #e5e7eb",
           borderRadius: "8px",
+          boxSizing: "border-box",
+          overflowX: "hidden",
         }}
       >
-        {/* Hidden print styles */}
-        <style>{`
-          @media print {
-            body { margin: 0; padding: 0; }
-          }
-        `}</style>
-
         {/* ── Header ── */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: "0.75rem",
+            marginBottom: "1.25rem",
+          }}
+        >
           {/* Left: Clinic brand */}
           <div>
-            <div style={{ fontSize: "26px", fontWeight: "700", color: "#1a1a2e", letterSpacing: "-0.5px" }}>
+            <div style={{ fontSize: "22px", fontWeight: "700", color: "#1a1a2e", letterSpacing: "-0.5px" }}>
               BayMax+{" "}
               <span style={{ color: "#3b82f6" }}>Healthcare</span>
             </div>
@@ -187,8 +192,8 @@ export default function PrescriptionPreview({ data }) {
 
           {/* Right: Doctor info */}
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: "16px", fontWeight: "700", color: "#1a1a2e" }}>{doctorName}</div>
-            <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "2px" }}>{doctorDegree}</div>
+            <div style={{ fontSize: "15px", fontWeight: "700", color: "#1a1a2e" }}>{doctorName}</div>
+            <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "2px" }}>{doctorDegree}</div>
             <div style={{ fontSize: "11px", color: "#6b7280" }}>Reg No: {doctorReg}</div>
             <div style={{ fontSize: "11px", color: "#6b7280" }}>{formattedDate}</div>
           </div>
@@ -201,8 +206,8 @@ export default function PrescriptionPreview({ data }) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr auto auto",
-            gap: "1rem",
+            gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+            gap: "0.75rem",
             background: "#f0f4ff",
             border: "1px solid #c7d2fe",
             borderRadius: "6px",
@@ -212,19 +217,19 @@ export default function PrescriptionPreview({ data }) {
         >
           <div>
             <div style={{ fontSize: "9px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#6b7280", marginBottom: "4px" }}>Patient Name</div>
-            <div style={{ fontSize: "14px", fontWeight: "600", color: "#1a1a2e" }}>{patientName || "—"}</div>
+            <div style={{ fontSize: "13px", fontWeight: "600", color: "#1a1a2e" }}>{patientName || "—"}</div>
           </div>
           <div>
             <div style={{ fontSize: "9px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#6b7280", marginBottom: "4px" }}>Known Allergies</div>
-            <div style={{ fontSize: "14px", fontWeight: "600", color: allergies ? "#dc2626" : "#374151" }}>{allergies || "None"}</div>
+            <div style={{ fontSize: "13px", fontWeight: "600", color: allergies ? "#dc2626" : "#374151" }}>{allergies || "None"}</div>
           </div>
           <div>
             <div style={{ fontSize: "9px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#6b7280", marginBottom: "4px" }}>Date</div>
-            <div style={{ fontSize: "14px", fontWeight: "600", color: "#1a1a2e" }}>{formattedDate}</div>
+            <div style={{ fontSize: "13px", fontWeight: "600", color: "#1a1a2e" }}>{formattedDate}</div>
           </div>
         </div>
 
-        {/* ── Diagnosis / Chief Complaint ── */}
+        {/* ── Diagnosis ── */}
         <div
           style={{
             border: "1.5px dashed #fbbf24",
@@ -243,55 +248,83 @@ export default function PrescriptionPreview({ data }) {
         </div>
 
         {/* ── Rx Symbol ── */}
-        <div style={{ fontSize: "32px", fontWeight: "700", color: "#1e3a8a", marginBottom: "0.625rem", fontFamily: "Georgia, serif" }}>
+        <div style={{ fontSize: "28px", fontWeight: "700", color: "#1e3a8a", marginBottom: "0.5rem", fontFamily: "Georgia, serif" }}>
           ℞
         </div>
 
-        {/* ── Medicines Table ── */}
-        <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "1.25rem", fontSize: "13px" }}>
-          <thead>
-            <tr style={{ background: "#1e3a8a", color: "#fff" }}>
-              {["#", "Medicine", "Type", "Dosage", "Duration", "Precautions"].map((h) => (
-                <th
-                  key={h}
-                  style={{
-                    padding: "8px 10px",
-                    textAlign: "left",
-                    fontSize: "10px",
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                    fontWeight: "600",
-                  }}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {medicineRows.length > 0 ? (
-              medicineRows.map((med, i) => (
-                <tr
-                  key={i}
-                  style={{ background: i % 2 === 0 ? "#fff" : "#f8faff", borderBottom: "1px solid #e5e7eb" }}
-                >
-                  <td style={{ padding: "9px 10px", color: "#6b7280" }}>{i + 1}</td>
-                  <td style={{ padding: "9px 10px", fontWeight: "600", color: "#1a1a2e" }}>{med.name}</td>
-                  <td style={{ padding: "9px 10px", color: "#6b7280", fontStyle: "italic" }}>—</td>
-                  <td style={{ padding: "9px 10px", color: "#1a1a2e" }}>{med.dosage || "—"}</td>
-                  <td style={{ padding: "9px 10px", color: "#1a1a2e" }}>{med.duration || "—"}</td>
-                  <td style={{ padding: "9px 10px", color: "#374151" }}>—</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={6} style={{ padding: "16px 10px", color: "#9ca3af", textAlign: "center" }}>
-                  No medicines added
-                </td>
+        {/* ✅ FIX: Responsive table wrapper — prevents horizontal overflow */}
+        <div style={{ width: "100%", overflowX: "auto", marginBottom: "1.25rem" }}>
+          <table style={{ width: "100%", minWidth: "520px", borderCollapse: "collapse", fontSize: "12px" }}>
+            <thead>
+              <tr style={{ background: "#1e3a8a", color: "#fff" }}>
+                {["#", "Medicine", "Dosage", "Duration", "Type", "Precautions"].map((h) => (
+                  <th
+                    key={h}
+                    style={{
+                      padding: "8px 10px",
+                      textAlign: "left",
+                      fontSize: "10px",
+                      letterSpacing: "1px",
+                      textTransform: "uppercase",
+                      fontWeight: "600",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {medicineRows.length > 0 ? (
+                medicineRows.map((med, i) => (
+                  <tr
+                    key={i}
+                    style={{
+                      background: i % 2 === 0 ? "#fff" : "#f8faff",
+                      borderBottom: "1px solid #e5e7eb",
+                      verticalAlign: "top",
+                    }}
+                  >
+                    {/* # */}
+                    <td style={{ padding: "9px 10px", color: "#6b7280", whiteSpace: "nowrap", width: "28px" }}>
+                      {i + 1}
+                    </td>
+
+                    {/* ✅ Medicine — bold, wraps naturally */}
+                    <td style={{ padding: "9px 10px", fontWeight: "600", color: "#1a1a2e", minWidth: "120px" }}>
+                      {med.name}
+                    </td>
+
+                    {/* ✅ Dosage — per-medicine, wraps in cell */}
+                    <td style={{ padding: "9px 10px", color: "#1a1a2e", minWidth: "130px", lineHeight: "1.4" }}>
+                      {med.dosage || "—"}
+                    </td>
+
+                    {/* ✅ Duration — per-medicine, no longer shared */}
+                    <td style={{ padding: "9px 10px", color: "#1a1a2e", minWidth: "100px", lineHeight: "1.4" }}>
+                      {med.duration || "—"}
+                    </td>
+
+                    {/* Type */}
+                    <td style={{ padding: "9px 10px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" }}>
+                      —
+                    </td>
+
+                    {/* Precautions */}
+                    <td style={{ padding: "9px 10px", color: "#374151" }}>—</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} style={{ padding: "16px 10px", color: "#9ca3af", textAlign: "center" }}>
+                    No medicines added
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* ── General Advice / Warnings ── */}
         {warnings && warnings.length > 0 && (
@@ -337,11 +370,13 @@ export default function PrescriptionPreview({ data }) {
             paddingTop: "0.75rem",
             borderTop: "1px solid #e5e7eb",
             display: "flex",
+            flexWrap: "wrap",
             justifyContent: "space-between",
             alignItems: "flex-end",
+            gap: "1rem",
           }}
         >
-          <p style={{ fontSize: "10px", color: "#9ca3af" }}>
+          <p style={{ fontSize: "10px", color: "#9ca3af", maxWidth: "300px" }}>
             This is a generated preview. Clinician must review for accuracy before finalizing.
           </p>
           <div style={{ textAlign: "right" }}>
